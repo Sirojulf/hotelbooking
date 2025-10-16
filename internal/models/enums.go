@@ -34,6 +34,22 @@ const (
 	BookingStatusNoShow     BookingStatus = "NoShow"
 )
 
+type RoomType string
+
+const (
+	RoomTypeStandard RoomType = "Standard"
+	RoomTypeDeluxe   RoomType = "Deluxe"
+	RoomTypeSuite    RoomType = "Suite"
+)
+
+type RoomStatus string
+
+const (
+	RoomStatusAvailable  RoomStatus = "Available"
+	RoomStatusOccupied   RoomStatus = "Occupied"
+	RoomStatusOutOfOrder RoomStatus = "OutOfOrder"
+)
+
 type HousekeepingStatus string
 
 const (
