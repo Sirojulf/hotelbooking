@@ -37,9 +37,18 @@ const (
 type RoomType string
 
 const (
-	RoomTypeStandard RoomType = "Standard"
+	RoomTypeCompact  RoomType = "Compact"
 	RoomTypeDeluxe   RoomType = "Deluxe"
-	RoomTypeSuite    RoomType = "Suite"
+	RoomTypeSuperior RoomType = "Superior"
+)
+
+type RateType string
+
+const (
+	RateTypeNonRefundableRoomOnly      RateType = "Non Refundable Room Only"
+	RateTypeNonRefundableWithBreakfast RateType = "Non Refundable with Breakfast"
+	RateTypeRefundableRoomOnly         RateType = "Refundable Room Only"
+	RateTypeRefundableWithBreakfast    RateType = "Refundable with Breakfast"
 )
 
 type RoomStatus string
