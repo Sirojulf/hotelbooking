@@ -8,7 +8,7 @@ import (
 )
 
 type LoginRequest struct {
-	Email    string `json:"email"`
+	Login    string `json:"login"`
 	Password string `json:"password"`
 }
 
@@ -26,7 +26,7 @@ func (h *LoginGuestHandler) Handle(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, echo.Map{"error": "Invalid request body"})
 	}
 
-	session, err := h.Svc.Execute(req.Email, req.Password)
+	session, err := h.Svc.Execute(req.Login, req.Password)
 	if err != nil {
 		return c.JSON(http.StatusUnauthorized, echo.Map{"error": err.Error()})
 	}
