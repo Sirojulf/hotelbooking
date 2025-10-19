@@ -15,6 +15,7 @@ type RegisterGuestRequest struct {
 	Password  string        `json:"password"`
 	Phone     string        `json:"phone"`
 	Gender    models.Gender `json:"gender"`
+	Country   string        `json:"country"`
 }
 
 type RegisterGuestHandler struct {
@@ -31,7 +32,7 @@ func (h *RegisterGuestHandler) Handle(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, echo.Map{"error": "Invalid request body"})
 	}
 
-	createdProfile, err := h.Svc.Execute(req.Email, req.Password, req.FirstName, req.LastName, req.Phone, req.Gender)
+	createdProfile, err := h.Svc.Execute(req.Email, req.Password, req.FirstName, req.LastName, req.Phone, req.Country, req.Gender)
 	if err != nil {
 		return c.JSON(http.StatusUnprocessableEntity, echo.Map{"error": err.Error()})
 	}

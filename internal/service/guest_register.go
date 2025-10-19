@@ -6,11 +6,11 @@ import (
 	"hotelbooking/internal/models"
 	"hotelbooking/internal/repository"
 
-	"github.com/supabase-community/gotrue-go/types" // <-- IMPORT BARU
+	"github.com/supabase-community/gotrue-go/types"
 )
 
 type RegisterGuestService interface {
-	Execute(email, password, firstName, lastName, phone string, gender models.Gender) (*models.Guest, error)
+	Execute(email, password, firstName, lastName, phone, country string, gender models.Gender) (*models.Guest, error)
 }
 
 type registerGuestService struct {
@@ -21,7 +21,7 @@ func NewRegisterGuestService(guestRepo repository.GuestRepo) *registerGuestServi
 	return &registerGuestService{guestRepo: guestRepo}
 }
 
-func (s *registerGuestService) Execute(email, password, firstName, lastName, phone string, gender models.Gender) (*models.Guest, error) {
+func (s *registerGuestService) Execute(email, password, firstName, lastName, phone, country string, gender models.Gender) (*models.Guest, error) {
 	// PERBAIKAN: Buat struct SignupRequest terlebih dahulu
 	requestBody := types.SignupRequest{
 		Email:    email,
@@ -45,6 +45,7 @@ func (s *registerGuestService) Execute(email, password, firstName, lastName, pho
 		GuestType: models.GuestTypedult,
 		VIPStatus: models.VIPStatusBronze,
 		Gender:    gender,
+		Country:   country,
 	}
 
 	if err := s.guestRepo.CreateProfile(guestProfile); err != nil {
