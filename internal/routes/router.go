@@ -34,12 +34,4 @@ func SetupRoutes(e *echo.Echo) {
 	protectedRoutes := apiV1.Group("")
 	protectedRoutes.Use(middleware.AuthMiddleware)
 
-	// Hotel
-	hotelRepo := repository.NewHotelRepo()
-
-	// create_hotel
-	createHotelSvc := service.NewCreateHotelService(hotelRepo)
-	createHotelHandler := handler.NewCreateHotelHandler(createHotelSvc)
-	protectedRoutes.POST("/hotels/create", createHotelHandler.Handle)
-
 }
