@@ -30,6 +30,14 @@ func SetupRoutes(e *echo.Echo) {
 	loginHandler := handler.NewLoginGuestHandler(loginSvc)
 	apiV1.POST("/guests/login", loginHandler.Handle)
 
+	// Admin
+	adminRepo := repository.NewAdminRepo()
+
+	// Login
+	adminLoginSvc := service.NewAdminLoginService(adminRepo)
+	adminLoginHandler := handler.NewAdminLoginHandler(adminLoginSvc)
+	apiV1.POST("/admin/login", adminLoginHandler.Login)
+
 	// AuthMiddleware
 	protectedRoutes := apiV1.Group("")
 	protectedRoutes.Use(middleware.AuthMiddleware)
