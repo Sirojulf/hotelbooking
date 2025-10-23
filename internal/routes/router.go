@@ -34,19 +34,6 @@ func SetupRoutes(e *echo.Echo) {
 	protectedRoutes := apiV1.Group("")
 	protectedRoutes.Use(middleware.AuthMiddleware)
 
-	// Staff
-	staffRepo := repository.NewStaffRepo()
-
-	// Register
-	registerStaffSvc := service.NewRegisterStaffService(staffRepo)
-	registerStaffHandler := handler.NewRegisterStaffHandler(registerStaffSvc)
-	apiV1.POST("/staff/register", registerStaffHandler.Handle)
-
-	// Login
-	loginStaffSvc := service.NewLoginStaffService()
-	loginStaffHandler := handler.NewLoginStaffHandler(loginStaffSvc)
-	apiV1.POST("/staff/login", loginStaffHandler.Handle)
-
 	// Hotel
 	hotelRepo := repository.NewHotelRepo()
 
