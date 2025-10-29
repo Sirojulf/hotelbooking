@@ -3,7 +3,7 @@ package models
 type GuestType string
 
 const (
-	GuestTypedult  GuestType = "Adult"
+	GuestTypeAdult GuestType = "Adult"
 	GuestTypeChild GuestType = "Child"
 )
 
@@ -28,7 +28,7 @@ type BookingStatus string
 const (
 	BookingStatusNew        BookingStatus = "New"
 	BookingStatusConfirmed  BookingStatus = "Confirmed"
-	BookingStatusCancel     BookingStatus = "Cancel"
+	BookingStatusCancel     BookingStatus = "Cancelled"
 	BookingStatusCheckedIn  BookingStatus = "CheckedIn"
 	BookingStatusCheckedOut BookingStatus = "CheckedOut"
 	BookingStatusNoShow     BookingStatus = "NoShow"

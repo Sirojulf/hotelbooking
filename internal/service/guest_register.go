@@ -22,15 +22,11 @@ func NewRegisterGuestService(guestRepo repository.GuestRepo) *registerGuestServi
 }
 
 func (s *registerGuestService) Execute(email, password, firstName, lastName, phone, country string, gender models.Gender) (*models.Guest, error) {
-	// PERBAIKAN: Buat struct SignupRequest terlebih dahulu
 	requestBody := types.SignupRequest{
 		Email:    email,
 		Password: password,
-		// Anda juga bisa menambahkan data lain di sini jika diperlukan
-		// Data: map[string]interface{}{"full_name": firstName + " " + lastName},
 	}
 
-	// Panggil fungsi Signup dengan satu argumen struct
 	user, err := config.SupabaseClient.Auth.Signup(requestBody)
 	if err != nil {
 		return nil, fmt.Errorf("gagal mendaftar: %v", err)
@@ -42,7 +38,7 @@ func (s *registerGuestService) Execute(email, password, firstName, lastName, pho
 		LastName:  lastName,
 		Email:     user.Email,
 		Phone:     phone,
-		GuestType: models.GuestTypedult,
+		GuestType: models.GuestTypeAdult,
 		VIPStatus: models.VIPStatusBronze,
 		Gender:    gender,
 		Country:   country,
