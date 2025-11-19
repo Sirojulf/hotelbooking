@@ -1,13 +1,22 @@
 package models
 
+import (
+	"time"
+
+	"github.com/google/uuid"
+)
+
 type Room struct {
-	ID                 string             `json:"id"`
-	PropertyID         string             `json:"property_id"`
-	RoomNumber         string             `json:"room_number"`
-	RoomType           RoomType           `json:"room_type"`
-	RateType           RateType           `json:"rate_type"`
-	Status             RoomStatus         `json:"status"`
-	HousekeepingStatus HousekeepingStatus `json:"housekeeping_status"`
-	BasePrice          float64            `json:"base_price"`
-	CreatedAt          string             `json:"created_at"`
+	ID         uuid.UUID `json:"id" db:"id"`
+	PropertyID uuid.UUID `json:"property_id" db:"property_id"`
+	RoomNumber string    `json:"room_number" db:"room_number"`
+
+	RoomTypeID uuid.UUID `json:"room_type_id" db:"room_type_id"`
+
+	RoomTypeDetail *RoomType `json:"room_type_detail,omitempty" db:"-"`
+
+	Status             RoomStatus         `json:"status" db:"status"`
+	HousekeepingStatus HousekeepingStatus `json:"housekeeping_status" db:"housekeeping_status"`
+
+	CreatedAt time.Time `json:"created_at" db:"created_at"`
 }

@@ -38,8 +38,15 @@ func SetupRoutes(e *echo.Echo) {
 	adminLoginHandler := handler.NewAdminLoginHandler(adminLoginSvc)
 	apiV1.POST("/admin/login", adminLoginHandler.Login)
 
-	// AuthMiddleware
+	// Protected Routes
 	protectedRoutes := apiV1.Group("")
 	protectedRoutes.Use(middleware.AuthMiddleware)
+
+	// Inventory management
+	propertyRepo := repository.NewPropertyRepo()
+	inventorySvc := service.NewInventoryService(propertyRepo)
+	inventoryHandler := handler.NewInventoryHandler(inventorySvc)
+
+	protectedRoutes.POST("/admin/hotels", inventoryHandler.CreateHotel)
 
 }

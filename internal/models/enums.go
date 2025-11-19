@@ -34,14 +34,6 @@ const (
 	BookingStatusNoShow     BookingStatus = "NoShow"
 )
 
-type RoomType string
-
-const (
-	RoomTypeCompact  RoomType = "Compact"
-	RoomTypeDeluxe   RoomType = "Deluxe"
-	RoomTypeSuperior RoomType = "Superior"
-)
-
 type RateType string
 
 const (

@@ -9,6 +9,7 @@ import (
 
 type PropertyRepo interface {
 	GetPropertyByAuth(hotelCode, authCode string) (*models.Properties, error)
+	CreateProperty(property models.Properties) error
 }
 
 type propertyRepo struct{}
@@ -37,4 +38,18 @@ func (r *propertyRepo) GetPropertyByAuth(hotelcode, authCode string) (*models.Pr
 	}
 
 	return &property, nil
+}
+
+// CreateProperty
+func (r *propertyRepo) CreateProperty(property models.Properties) error {
+	_, _, err := config.SupabaseClient.
+		From("properties").
+		Insert(property, false, "", "", "").
+		Execute()
+
+	if err != nil {
+		return fmt.Errorf("gagal memebuat property hotel: %v", err)
+	}
+
+	return nil
 }
