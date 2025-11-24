@@ -38,9 +38,9 @@ func (h *InventoryHandler) CreateHotel(c echo.Context) error {
 }
 
 type CreateRoomRequest struct {
-	PropertyID string `json: "property_id"`
-	RoomTypeID string `json: "room_type_id"`
-	RoomNumber string `json: "room_number"`
+	PropertyID string `json:"property_id"`
+	RoomTypeID string `json:"room_type_id"`
+	RoomNumber string `json:"room_number"`
 }
 
 func (h *InventoryHandler) CreateRoom(c echo.Context) error {
