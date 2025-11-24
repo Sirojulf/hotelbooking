@@ -10,6 +10,8 @@ import (
 type PropertyRepo interface {
 	GetPropertyByAuth(hotelCode, authCode string) (*models.Properties, error)
 	CreateProperty(property models.Properties) error
+	CreateRoomType(roomType models.RoomType) error
+	CreateRoom(room models.Room) error
 }
 
 type propertyRepo struct{}
@@ -49,6 +51,31 @@ func (r *propertyRepo) CreateProperty(property models.Properties) error {
 
 	if err != nil {
 		return fmt.Errorf("gagal memebuat property hotel: %v", err)
+	}
+
+	return nil
+}
+
+func (r *propertyRepo) CreateRoomType(roomType models.RoomType) error {
+	_, _, err := config.SupabaseClient.
+		From("room_types").
+		Insert(roomType, false, "", "", "").
+		Execute()
+
+	if err != nil {
+		return fmt.Errorf("gagal membuat tipe kamar: %v", err)
+	}
+	return nil
+}
+
+func (r *propertyRepo) CreateRoom(room models.Room) error {
+	_, _, err := config.SupabaseClient.
+		From("rooms").
+		Insert(room, false, "", "", "").
+		Execute()
+
+	if err != nil {
+		return fmt.Errorf("gagal membuat unit kamar: %v", err)
 	}
 
 	return nil

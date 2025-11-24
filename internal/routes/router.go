@@ -47,6 +47,15 @@ func SetupRoutes(e *echo.Echo) {
 	inventorySvc := service.NewInventoryService(propertyRepo)
 	inventoryHandler := handler.NewInventoryHandler(inventorySvc)
 
+	// TODO: Nanti tambahkan middleware cek role Admin di sini!
+	// Saat ini hanya cek token valid, tapi setidaknya route-nya sudah ada.
+
 	protectedRoutes.POST("/admin/hotels", inventoryHandler.CreateHotel)
+
+	// FIX: Route Room Types ditambahkan
+	protectedRoutes.POST("/admin/room-types", inventoryHandler.CreateRoomType)
+
+	// Add room
+	protectedRoutes.POST("/admin/rooms", inventoryHandler.CreateRoom)
 
 }

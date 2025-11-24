@@ -8,9 +8,8 @@ import (
 )
 
 type AdminLoginRequest struct {
-	Email      string `json:"email"`
-	Password   string `json:"password"`
-	PropertyID string `json:"property_id"`
+	Email    string `json:"email"`
+	Password string `json:"password"`
 }
 
 type AdminLoginHandler struct {
@@ -28,7 +27,7 @@ func (h *AdminLoginHandler) Login(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, echo.Map{"error": "Invalid request body"})
 	}
 
-	session, err := h.Svc.Execute(req.Email, req.Password, req.PropertyID)
+	session, err := h.Svc.Execute(req.Email, req.Password)
 	if err != nil {
 		return c.JSON(http.StatusUnauthorized, echo.Map{"error": err.Error()})
 

@@ -11,7 +11,7 @@ import (
 )
 
 type AdminLoginService interface {
-	Execute(email, password, propertyID string) (*AdminLoginResponse, error)
+	Execute(email, password string) (*AdminLoginResponse, error)
 }
 
 type AdminLoginResponse struct {
@@ -27,9 +27,9 @@ func NewAdminLoginService(repo repository.AdminRepo) AdminLoginService {
 	return &adminLoginService{repo: repo}
 }
 
-func (s *adminLoginService) Execute(email, password, propertyID string) (*AdminLoginResponse, error) {
-	if email == "" || password == "" || propertyID == "" {
-		return nil, fmt.Errorf("email, password, and property_id are required")
+func (s *adminLoginService) Execute(email, password string) (*AdminLoginResponse, error) {
+	if email == "" || password == "" {
+		return nil, fmt.Errorf("email and password are required")
 	}
 
 	tokenResponse, err := config.SupabaseClient.Auth.SignInWithEmailPassword(email, password)
@@ -40,7 +40,6 @@ func (s *adminLoginService) Execute(email, password, propertyID string) (*AdminL
 	resp, _, err := config.SupabaseClient.
 		From("admin").
 		Select("*", "", false).
-		Eq("property_id", propertyID).
 		Eq("email", email).
 		Single().
 		Execute()

@@ -11,6 +11,8 @@ import (
 
 type InventoryService interface {
 	CreateHotel(name, address, city, country, hotelCode string) (*models.Properties, error)
+	CreateRoomType(propertyID, name, description string, price float64, capacity int, facilities []string) (*models.RoomType, error)
+	CreateRoom(propertyID, roomTypeID, roomNumber string) (*models.Room, error)
 }
 
 type inventoryService struct {
@@ -47,4 +49,71 @@ func (s *inventoryService) CreateHotel(name, address, city, country, hotelCode s
 	}
 
 	return &newProperty, nil
+}
+
+func (s *inventoryService) CreateRoomType(propertyID, name, description string, price float64, capacity int, facilities []string) (*models.RoomType, error) {
+	if name == "" {
+		return nil, fmt.Errorf("nama tipe kamar wajib diisi")
+	}
+
+	if price <= 0 {
+		return nil, fmt.Errorf("harga harus lebih dari 0")
+	}
+
+	if capacity <= 0 {
+		return nil, fmt.Errorf("kapasitas minimal 1 orang")
+	}
+
+	propUUID, err := uuid.Parse(propertyID)
+	if err != nil {
+		return nil, fmt.Errorf("property_id tidak valid")
+	}
+
+	newRoomType := models.RoomType{
+		ID:          uuid.New(),
+		PropertyID:  propUUID,
+		Name:        name,
+		Description: description,
+		BasePrice:   price,
+		Capacity:    capacity,
+		Facilities:  facilities,
+	}
+
+	if err := s.repo.CreateRoomType(newRoomType); err != nil {
+		return nil, err
+	}
+
+	return &newRoomType, nil
+}
+
+func (s *inventoryService) CreateRoom(propertyID, roomTypeID, roomNumber string) (*models.Room, error) {
+	if roomNumber == "" {
+		return nil, fmt.Errorf("nomor kamar wajib diisi")
+	}
+
+	propUUID, err := uuid.Parse(propertyID)
+	if err != nil {
+		return nil, fmt.Errorf("invalid property id")
+	}
+	typeUUID, err := uuid.Parse(roomTypeID)
+	if err != nil {
+		return nil, fmt.Errorf("invalid room id")
+	}
+
+	newRoom := models.Room{
+		ID:                 uuid.New(),
+		PropertyID:         propUUID,
+		RoomTypeID:         typeUUID,
+		RoomNumber:         roomNumber,
+		RoomTypeDetail:     &models.RoomType{},
+		Status:             models.RoomStatusAvailable,
+		HousekeepingStatus: models.HousekeepingStatusClean,
+		CreatedAt:          time.Time{},
+	}
+
+	if err := s.repo.CreateRoom(newRoom); err != nil {
+		return nil, err
+	}
+
+	return &newRoom, nil
 }

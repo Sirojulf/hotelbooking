@@ -36,3 +36,45 @@ func (h *InventoryHandler) CreateHotel(c echo.Context) error {
 
 	return c.JSON(http.StatusCreated, result)
 }
+
+type CreateRoomRequest struct {
+	PropertyID string `json: "property_id"`
+	RoomTypeID string `json: "room_type_id"`
+	RoomNumber string `json: "room_number"`
+}
+
+func (h *InventoryHandler) CreateRoom(c echo.Context) error {
+	var req CreateRoomRequest
+	if err := c.Bind(&req); err != nil {
+		return c.JSON(http.StatusBadRequest, echo.Map{"error": "Invalid request body"})
+	}
+	result, err := h.Svc.CreateRoom(req.PropertyID, req.RoomTypeID, req.RoomNumber)
+	if err != nil {
+		return c.JSON(http.StatusUnprocessableEntity, echo.Map{"error": err.Error()})
+	}
+
+	return c.JSON(http.StatusCreated, result)
+}
+
+type CreateRoomTypeRequest struct {
+	PropertyID  string   `json:"property_id"`
+	Name        string   `json:"name"`
+	Description string   `json:"description"`
+	BasePrice   float64  `json:"base_price"`
+	Capacity    int      `json:"capacity"`
+	Facilities  []string `json:"facilities"`
+}
+
+func (h *InventoryHandler) CreateRoomType(c echo.Context) error {
+	var req CreateRoomTypeRequest
+	if err := c.Bind(&req); err != nil {
+		return c.JSON(http.StatusBadRequest, echo.Map{"error": "Invalid request body"})
+	}
+
+	result, err := h.Svc.CreateRoomType(req.PropertyID, req.Name, req.Description, req.BasePrice, req.Capacity, req.Facilities)
+	if err != nil {
+		return c.JSON(http.StatusUnprocessableEntity, echo.Map{"error": err.Error()})
+	}
+
+	return c.JSON(http.StatusCreated, result)
+}
