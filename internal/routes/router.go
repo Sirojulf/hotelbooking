@@ -11,51 +11,71 @@ import (
 )
 
 func SetupRoutes(e *echo.Echo) {
+	// Health check
 	e.GET("/", func(c echo.Context) error {
 		return c.String(http.StatusOK, "Hotel Booking API is running!")
 	})
 
-	apiV1 := e.Group("/api/v1")
+	api := e.Group("/api/v1")
 
-	// Guest
+	// ======================
+	// REPOSITORIES
+	// ======================
 	guestRepo := repository.NewGuestRepo()
-
-	// Register
-	registerSvc := service.NewRegisterGuestService(guestRepo)
-	registerHandler := handler.NewRegisterGuestHandler(registerSvc)
-	apiV1.POST("/guests/register", registerHandler.Handle)
-
-	// Login
-	loginSvc := service.NewLoginGuestService()
-	loginHandler := handler.NewLoginGuestHandler(loginSvc)
-	apiV1.POST("/guests/login", loginHandler.Handle)
-
-	// Admin
 	adminRepo := repository.NewAdminRepo()
-
-	// Login
-	adminLoginSvc := service.NewAdminLoginService(adminRepo)
-	adminLoginHandler := handler.NewAdminLoginHandler(adminLoginSvc)
-	apiV1.POST("/admin/login", adminLoginHandler.Login)
-
-	// Protected Routes
-	protectedRoutes := apiV1.Group("")
-	protectedRoutes.Use(middleware.AuthMiddleware)
-
-	// Inventory management
 	propertyRepo := repository.NewPropertyRepo()
+	bookingRepo := repository.NewBookingRepo()
+
+	// ======================
+	// SERVICES (DOMAIN BASED)
+	// ======================
+	// Guest domain: auth + experience (search hotel, bookings, profile)
+	guestSvc := service.NewGuestService(guestRepo, propertyRepo, bookingRepo)
+
+	// Admin domain: login + (nanti) manajemen admin
+	adminSvc := service.NewAdminService(adminRepo)
+
+	// Inventory domain (admin kelola hotel/room/room-type)
 	inventorySvc := service.NewInventoryService(propertyRepo)
+
+	// ======================
+	// HANDLERS
+	// ======================
+	guestHandler := handler.NewGuestHandler(guestSvc)
+	adminHandler := handler.NewAdminHandler(adminSvc)
 	inventoryHandler := handler.NewInventoryHandler(inventorySvc)
 
-	// TODO: Nanti tambahkan middleware cek role Admin di sini!
-	// Saat ini hanya cek token valid, tapi setidaknya route-nya sudah ada.
+	// ======================
+	// PUBLIC ROUTES
+	// ======================
 
-	protectedRoutes.POST("/admin/hotels", inventoryHandler.CreateHotel)
+	// Auth Guest
+	api.POST("/auth/guest/register", guestHandler.Register)
+	api.POST("/auth/guest/login", guestHandler.Login)
 
-	// FIX: Route Room Types ditambahkan
-	protectedRoutes.POST("/admin/room-types", inventoryHandler.CreateRoomType)
+	// Auth Admin
+	api.POST("/auth/admin/login", adminHandler.Login)
 
-	// Add room
-	protectedRoutes.POST("/admin/rooms", inventoryHandler.CreateRoom)
+	// Guest Experience (tanpa login: explore hotel)
+	api.GET("/hotels", guestHandler.SearchHotels)       // ?city=Jakarta
+	api.GET("/hotels/:id", guestHandler.GetHotelDetail) // detail 1 hotel
 
+	// ======================
+	// PROTECTED ROUTES (BUTUH TOKEN)
+	// ======================
+
+	// Group khusus Guest (butuh AuthMiddleware)
+	guestGroup := api.Group("/guests")
+	guestGroup.Use(middleware.AuthMiddleware)
+	guestGroup.GET("/bookings", guestHandler.GetMyBookings)
+	guestGroup.GET("/me", guestHandler.GetMyProfile)
+
+	// Group khusus Admin (butuh AuthMiddleware)
+	adminGroup := api.Group("/admin")
+	adminGroup.Use(middleware.AuthMiddleware)
+
+	// Fitur admin untuk manage hotel & inventory
+	adminGroup.POST("/hotels", inventoryHandler.CreateHotel)
+	adminGroup.POST("/room-types", inventoryHandler.CreateRoomType)
+	adminGroup.POST("/rooms", inventoryHandler.CreateRoom)
 }

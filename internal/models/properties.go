@@ -11,8 +11,12 @@ type Properties struct {
 	HotelCode string    `json:"hotel_code" db:"hotel_code"`
 	AuthCode  string    `json:"auth_code" db:"auth_code"`
 	Name      string    `json:"name" db:"name"`
-	Address   string    `json:"address,omitempty" db:"address"`
 	City      string    `json:"city,omitempty" db:"city"`
-	Country   string    `json:"country,omitempty" db:"country"`
-	CreatedAt time.Time `json:"created_at,omitempty" db:"created_at"`
+	Address   string    `json:"address,omitempty" db:"address"`
+	CreatedAt time.Time `json:"created_at" db:"created_at"`
+}
+
+type PropertyDetailResponse struct {
+	Property  *Properties `json:"property"`
+	RoomTypes []RoomType  `json:"room_types"`
 }

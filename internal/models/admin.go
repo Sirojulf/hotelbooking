@@ -1,9 +1,15 @@
 package models
 
+import (
+	"time"
+
+	"github.com/google/uuid"
+)
+
 type Admin struct {
-	ID         string `json:"id" db:"id"`
-	PropertyID string `json:"property_id" db:"property_id"`
-	Email      string `json:"username" db:"email"`
-	IsActive   bool   `json:"is_active" db:"is_active"`
-	CreatedAt  string `json:"created_at" db:"created_at"`
+	ID         uuid.UUID  `json:"id" db:"id"`
+	PropertyID *uuid.UUID `json:"property_id,omitempty" db:"property_id"`
+	Email      string     `json:"email" db:"email"`
+	IsActive   bool       `json:"is_active" db:"is_active"`
+	CreatedAt  time.Time  `json:"created_at,omitempty" db:"created_at"`
 }

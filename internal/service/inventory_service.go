@@ -10,7 +10,7 @@ import (
 )
 
 type InventoryService interface {
-	CreateHotel(name, address, city, country, hotelCode string) (*models.Properties, error)
+	CreateHotel(name, address, city, hotelCode string) (*models.Properties, error)
 	CreateRoomType(propertyID, name, description string, price float64, capacity int, facilities []string) (*models.RoomType, error)
 	CreateRoom(propertyID, roomTypeID, roomNumber string) (*models.Room, error)
 }
@@ -23,7 +23,7 @@ func NewInventoryService(repo repository.PropertyRepo) InventoryService {
 	return &inventoryService{repo: repo}
 }
 
-func (s *inventoryService) CreateHotel(name, address, city, country, hotelCode string) (*models.Properties, error) {
+func (s *inventoryService) CreateHotel(name, address, city, hotelCode string) (*models.Properties, error) {
 	// 1. Validasi Input Sederhana
 	if name == "" || hotelCode == "" {
 		return nil, fmt.Errorf("nama hotel dan kode hotel wajib diisi")
@@ -38,7 +38,6 @@ func (s *inventoryService) CreateHotel(name, address, city, country, hotelCode s
 		Name:      name,
 		Address:   address,
 		City:      city,
-		Country:   country,
 		CreatedAt: time.Now(),
 	}
 
@@ -71,12 +70,13 @@ func (s *inventoryService) CreateRoomType(propertyID, name, description string, 
 
 	newRoomType := models.RoomType{
 		ID:          uuid.New(),
-		PropertyID:  propUUID,
+		PropertyID:  &propUUID,
 		Name:        name,
 		Description: description,
 		BasePrice:   price,
 		Capacity:    capacity,
 		Facilities:  facilities,
+		CreatedAt:   time.Now(),
 	}
 
 	if err := s.repo.CreateRoomType(newRoomType); err != nil {
@@ -102,13 +102,13 @@ func (s *inventoryService) CreateRoom(propertyID, roomTypeID, roomNumber string)
 
 	newRoom := models.Room{
 		ID:                 uuid.New(),
-		PropertyID:         propUUID,
-		RoomTypeID:         typeUUID,
+		PropertyID:         &propUUID,
+		RoomTypeID:         &typeUUID,
 		RoomNumber:         roomNumber,
 		RoomTypeDetail:     &models.RoomType{},
 		Status:             models.RoomStatusAvailable,
 		HousekeepingStatus: models.HousekeepingStatusClean,
-		CreatedAt:          time.Time{},
+		CreatedAt:          time.Now(),
 	}
 
 	if err := s.repo.CreateRoom(newRoom); err != nil {
