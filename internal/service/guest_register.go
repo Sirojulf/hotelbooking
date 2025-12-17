@@ -22,6 +22,9 @@ func NewRegisterGuestService(guestRepo repository.GuestRepo) *registerGuestServi
 }
 
 func (s *registerGuestService) Execute(email, password, firstName, lastName, phone, country string, gender models.Gender) (*models.Guest, error) {
+	if config.SupabaseClient == nil {
+		return nil, fmt.Errorf("supabase client is not initialized")
+	}
 	requestBody := types.SignupRequest{
 		Email:    email,
 		Password: password,

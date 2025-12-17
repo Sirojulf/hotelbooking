@@ -32,6 +32,10 @@ func (s *adminLoginService) Execute(email, password string) (*AdminLoginResponse
 		return nil, fmt.Errorf("email and password are required")
 	}
 
+	if config.SupabaseClient == nil {
+		return nil, fmt.Errorf("supabase client is not initialized")
+	}
+
 	tokenResponse, err := config.SupabaseClient.Auth.SignInWithEmailPassword(email, password)
 	if err != nil {
 		return nil, fmt.Errorf("login failed: %v", err)

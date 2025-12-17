@@ -17,7 +17,9 @@ func main() {
 	e.Use(middleware.Recover())
 
 	// Hubungkan ke Supabase
-	config.ConnectSupabase()
+	if err := config.ConnectSupabase(); err != nil {
+		e.Logger.Fatalf("failed to connect to supabase: %v", err)
+	}
 
 	// Atur semua rute API
 	routes.SetupRoutes(e)

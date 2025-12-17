@@ -10,7 +10,7 @@ import (
 
 var SupabaseClient *supabase.Client
 
-func ConnectSupabase() {
+func ConnectSupabase() error {
 
 	viper.SetConfigFile(".env")
 	viper.AutomaticEnv()
@@ -21,18 +21,21 @@ func ConnectSupabase() {
 
 	supaURL := viper.GetString("SUPABASE_URL")
 	if supaURL == "" {
-		log.Fatal("SUPABASE_URL is not set")
+		return fmt.Errorf("SUPABASE_URL is not set")
 	}
 
 	supaKEY := viper.GetString("SUPABASE_KEY")
 	if supaKEY == "" {
-		log.Fatal("SUPABASE_KEY is not set")
+		return fmt.Errorf("SUPABASE_KEY is not set")
 	}
+
 	client, err := supabase.NewClient(supaURL, supaKEY, &supabase.ClientOptions{})
 	if err != nil {
-		fmt.Println("Failed to initalize the client: ", err)
+		return fmt.Errorf("failed to initialize the client: %w", err)
 	}
 
 	SupabaseClient = client
 	fmt.Println("Success connected to Supabase.... ")
+
+	return nil
 }

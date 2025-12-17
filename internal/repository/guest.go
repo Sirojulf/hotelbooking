@@ -17,6 +17,9 @@ func NewGuestRepo() GuestRepo {
 }
 
 func (r *guestRepo) CreateProfile(profile models.Guest) error {
+	if config.SupabaseClient == nil {
+		return fmt.Errorf("supabase client is not initialized")
+	}
 	_, _, err := config.SupabaseClient.From("guests").Insert(profile, false, "", "", "").Execute()
 	if err != nil {
 		return fmt.Errorf("gagal menyisipkan profil tamu ke db: %v", err)

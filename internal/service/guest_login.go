@@ -23,6 +23,9 @@ func (s *loginGuestService) Execute(login, password string) (*types.TokenRespons
 	if login == "" || password == "" {
 		return nil, fmt.Errorf("email/phone and password are required")
 	}
+	if config.SupabaseClient == nil {
+		return nil, fmt.Errorf("supabase client is not initialized")
+	}
 	var (
 		tokenRespone *types.TokenResponse
 		err          error

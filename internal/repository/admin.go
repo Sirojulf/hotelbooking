@@ -22,6 +22,9 @@ func NewAdminRepo() AdminRepo {
 }
 
 func (r *adminRepo) CreateAdmin(admin models.Admin) error {
+	if config.SupabaseClient == nil {
+		return fmt.Errorf("supabase client is not initialized")
+	}
 	_, _, err := config.SupabaseClient.
 		From("admin").
 		Insert(admin, false, "", "", "").
@@ -34,6 +37,9 @@ func (r *adminRepo) CreateAdmin(admin models.Admin) error {
 }
 
 func (r *adminRepo) GetAdminByEmail(email string) (*models.Admin, error) {
+	if config.SupabaseClient == nil {
+		return nil, fmt.Errorf("supabase client is not initialized")
+	}
 	resp, _, err := config.SupabaseClient.
 		From("admin").
 		Select("*", "", false).
@@ -54,6 +60,9 @@ func (r *adminRepo) GetAdminByEmail(email string) (*models.Admin, error) {
 }
 
 func (r *adminRepo) GetAdminByProperty(propertyID string) (*models.Admin, error) {
+	if config.SupabaseClient == nil {
+		return nil, fmt.Errorf("supabase client is not initialized")
+	}
 	resp, _, err := config.SupabaseClient.
 		From("admin").
 		Select("*", "", false).
@@ -74,6 +83,9 @@ func (r *adminRepo) GetAdminByProperty(propertyID string) (*models.Admin, error)
 }
 
 func (r *adminRepo) GetAdminByEmailAndProperty(email, propertyID string) (*models.Admin, error) {
+	if config.SupabaseClient == nil {
+		return nil, fmt.Errorf("supabase client is not initialized")
+	}
 	resp, _, err := config.SupabaseClient.
 		From("admin").
 		Select("*", "", false).
@@ -95,6 +107,9 @@ func (r *adminRepo) GetAdminByEmailAndProperty(email, propertyID string) (*model
 }
 
 func (r *adminRepo) UpdateActiveStatus(adminID string, isActive bool) error {
+	if config.SupabaseClient == nil {
+		return fmt.Errorf("supabase client is not initialized")
+	}
 	updateData := map[string]interface{}{
 		"is_active": isActive,
 	}
