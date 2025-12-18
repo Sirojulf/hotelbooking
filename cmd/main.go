@@ -1,8 +1,19 @@
 package main
 
+//go:generate swag init -g cmd/main.go -o docs
+//
+// @title Hotel Booking API
+// @version 1.0
+// @description REST API for hotel booking management (guest, booking, admin inventory, reports).
+// @BasePath /api/v1
+// @securityDefinitions.apikey BearerAuth
+// @in header
+// @name Authorization
+
 import (
 	"hotelbooking/internal/config"
 	"hotelbooking/internal/routes"
+	_ "hotelbooking/docs"
 
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"

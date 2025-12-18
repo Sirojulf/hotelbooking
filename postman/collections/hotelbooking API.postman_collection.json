@@ -1,0 +1,2098 @@
+{
+  "info": {
+    "_postman_id": "hotelbooking-api-collection",
+    "name": "hotelbooking API",
+    "description": "Hotel Booking API - A Go Echo-based REST API for hotel booking management. Includes guest authentication, hotel search, booking management, and admin inventory/reporting features.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Health Check",
+      "item": [
+        {
+          "name": "Health Check",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                ""
+              ]
+            },
+            "description": "Check if the Hotel Booking API is running"
+          },
+          "response": [],
+          "event": {
+            "script": {
+              "exec": [
+                "pm.test(\"Status code is 200\", function () {",
+                "  pm.response.to.have.status(200);",
+                "});"
+              ],
+              "type": "text/javascript"
+            },
+            "listen": "test"
+          }
+        }
+      ],
+      "description": "API health check endpoint"
+    },
+    {
+      "name": "auth",
+      "item": [
+        {
+          "name": "guest",
+          "item": [
+            {
+              "name": "Register Guest",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"first_name\": \"\",\n  \"last_name\": \"\",\n  \"email\": \"\",\n  \"password\": \"\",\n  \"phone\": \"\",\n  \"gender\": \"Male\",\n  \"country\": \"\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/auth/guest/register",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "auth",
+                    "guest",
+                    "register"
+                  ]
+                },
+                "description": "Register a new guest account"
+              },
+              "response": [],
+              "event": {
+                "script": {
+                  "exec": [
+                    "pm.test(\"Status code is 201\", function () {",
+                    "  pm.response.to.have.status(201);",
+                    "});"
+                  ],
+                  "type": "text/javascript"
+                },
+                "listen": "test"
+              }
+            },
+            {
+              "name": "Login Guest",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"login\": \"\",\n  \"password\": \"\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/auth/guest/login",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "auth",
+                    "guest",
+                    "login"
+                  ]
+                },
+                "description": "Login as a guest user (email or phone)"
+              },
+              "response": [],
+              "event": {
+                "script": {
+                  "exec": [
+                    "pm.test(\"Status code is 200\", function () {",
+                    "  pm.response.to.have.status(200);",
+                    "});",
+                    "var json = pm.response.json();",
+                    "if (json && json.access_token) {",
+                    "  pm.environment.set(\"token\", json.access_token);",
+                    "}"
+                  ],
+                  "type": "text/javascript"
+                },
+                "listen": "test"
+              }
+            }
+          ],
+          "description": "Guest authentication endpoints"
+        },
+        {
+          "name": "admin",
+          "item": [
+            {
+              "name": "Login Admin",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"email\": \"\",\n  \"password\": \"\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/auth/admin/login",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "auth",
+                    "admin",
+                    "login"
+                  ]
+                },
+                "description": "Login as an admin user"
+              },
+              "response": [],
+              "event": {
+                "script": {
+                  "exec": [
+                    "pm.test(\"Status code is 200\", function () {",
+                    "  pm.response.to.have.status(200);",
+                    "});",
+                    "var json = pm.response.json();",
+                    "if (json && json.session && json.session.access_token) {",
+                    "  pm.environment.set(\"adminToken\", json.session.access_token);",
+                    "}"
+                  ],
+                  "type": "text/javascript"
+                },
+                "listen": "test"
+              }
+            }
+          ],
+          "description": "Admin authentication endpoints"
+        }
+      ],
+      "description": "Authentication endpoints for guests and admins"
+    },
+    {
+      "name": "hotels",
+      "item": [
+        {
+          "name": "Search Hotels",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/hotels?city=",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "hotels"
+              ],
+              "query": [
+                {
+                  "key": "city",
+                  "value": "",
+                  "description": "City name to search hotels (required)"
+                }
+              ]
+            },
+            "description": "Search hotels by city (public endpoint)"
+          },
+          "response": [],
+          "event": {
+            "script": {
+              "exec": [
+                "pm.test(\"Status code is 200\", function () {",
+                "  pm.response.to.have.status(200);",
+                "});"
+              ],
+              "type": "text/javascript"
+            },
+            "listen": "test"
+          }
+        },
+        {
+          "name": "Get Hotel Detail",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/hotels/:id",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "hotels",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "",
+                  "description": "Hotel ID"
+                }
+              ]
+            },
+            "description": "Get detailed information about a specific hotel (public endpoint)"
+          },
+          "response": [],
+          "event": {
+            "script": {
+              "exec": [
+                "pm.test(\"Status code is 200\", function () {",
+                "  pm.response.to.have.status(200);",
+                "});"
+              ],
+              "type": "text/javascript"
+            },
+            "listen": "test"
+          }
+        }
+      ],
+      "description": "Public hotel search and detail endpoints"
+    },
+    {
+      "name": "rooms",
+      "item": [
+        {
+          "name": "Check Room Availability",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/rooms/:room_id/availability?check_in=&check_out=",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "rooms",
+                ":room_id",
+                "availability"
+              ],
+              "query": [
+                {
+                  "key": "check_in",
+                  "value": "",
+                  "description": "Check-in date (YYYY-MM-DD)"
+                },
+                {
+                  "key": "check_out",
+                  "value": "",
+                  "description": "Check-out date (YYYY-MM-DD)"
+                }
+              ],
+              "variable": [
+                {
+                  "key": "room_id",
+                  "value": "",
+                  "description": "Room ID"
+                }
+              ]
+            },
+            "description": "Check availability for a specific room (public endpoint)"
+          },
+          "response": [],
+          "event": {
+            "script": {
+              "exec": [
+                "pm.test(\"Status code is 200\", function () {",
+                "  pm.response.to.have.status(200);",
+                "});"
+              ],
+              "type": "text/javascript"
+            },
+            "listen": "test"
+          }
+        }
+      ],
+      "description": "Public room availability endpoint"
+    },
+    {
+      "name": "guests",
+      "item": [
+        {
+          "name": "Get My Profile",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "description": "JWT token"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/guests/me",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "guests",
+                "me"
+              ]
+            },
+            "description": "Get current guest's profile (requires authentication)"
+          },
+          "response": [],
+          "event": {
+            "script": {
+              "exec": [
+                "pm.test(\"Status code is 200\", function () {",
+                "  pm.response.to.have.status(200);",
+                "});"
+              ],
+              "type": "text/javascript"
+            },
+            "listen": "test"
+          }
+        },
+        {
+          "name": "Get My Bookings",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "description": "JWT token"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/guests/bookings",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "guests",
+                "bookings"
+              ]
+            },
+            "description": "Get all bookings for the current guest (requires authentication)"
+          },
+          "response": [],
+          "event": {
+            "script": {
+              "exec": [
+                "pm.test(\"Status code is 200\", function () {",
+                "  pm.response.to.have.status(200);",
+                "});"
+              ],
+              "type": "text/javascript"
+            },
+            "listen": "test"
+          }
+        },
+        {
+          "name": "Create Booking",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "description": "JWT token"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"property_id\": \"\",\n  \"room_id\": \"\",\n  \"check_in\": \"YYYY-MM-DD\",\n  \"check_out\": \"YYYY-MM-DD\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/guests/bookings",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "guests",
+                "bookings"
+              ]
+            },
+            "description": "Create a new booking (requires authentication)"
+          },
+          "response": [],
+          "event": {
+            "script": {
+              "exec": [
+                "pm.test(\"Status code is 201\", function () {",
+                "  pm.response.to.have.status(201);",
+                "});",
+                "var json = pm.response.json();",
+                "if (json && json.booking && json.booking.id) {",
+                "  pm.environment.set(\"bookingId\", json.booking.id);",
+                "}"
+              ],
+              "type": "text/javascript"
+            },
+            "listen": "test"
+          }
+        },
+        {
+          "name": "Pay Booking",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "description": "JWT token"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"provider\": \"\",\n  \"reference\": \"\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/guests/bookings/:id/pay",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "guests",
+                "bookings",
+                ":id",
+                "pay"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "{{bookingId}}",
+                  "description": "Booking ID"
+                }
+              ]
+            },
+            "description": "Pay for a booking (requires authentication)"
+          },
+          "response": [],
+          "event": {
+            "script": {
+              "exec": [
+                "pm.test(\"Status code is 200\", function () {",
+                "  pm.response.to.have.status(200);",
+                "});"
+              ],
+              "type": "text/javascript"
+            },
+            "listen": "test"
+          }
+        },
+        {
+          "name": "Cancel Booking",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "description": "JWT token"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/guests/bookings/:id/cancel",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "guests",
+                "bookings",
+                ":id",
+                "cancel"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "{{bookingId}}",
+                  "description": "Booking ID"
+                }
+              ]
+            },
+            "description": "Cancel a booking (requires authentication)"
+          },
+          "response": [],
+          "event": {
+            "script": {
+              "exec": [
+                "pm.test(\"Status code is 200\", function () {",
+                "  pm.response.to.have.status(200);",
+                "});"
+              ],
+              "type": "text/javascript"
+            },
+            "listen": "test"
+          }
+        },
+        {
+          "name": "Get Invoice",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "description": "JWT token"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/guests/bookings/:id/invoice",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "guests",
+                "bookings",
+                ":id",
+                "invoice"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "{{bookingId}}",
+                  "description": "Booking ID"
+                }
+              ]
+            },
+            "description": "Get invoice for a booking (requires authentication)"
+          },
+          "response": [],
+          "event": {
+            "script": {
+              "exec": [
+                "pm.test(\"Status code is 200\", function () {",
+                "  pm.response.to.have.status(200);",
+                "});"
+              ],
+              "type": "text/javascript"
+            },
+            "listen": "test"
+          }
+        }
+      ],
+      "description": "Guest-specific endpoints (requires authentication)"
+    },
+    {
+      "name": "admin",
+      "item": [
+        {
+          "name": "hotels",
+          "item": [
+            {
+              "name": "Create Hotel",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{adminToken}}",
+                    "description": "Admin JWT token"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"\",\n  \"city\": \"\",\n  \"address\": \"\",\n  \"hotel_code\": \"\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/admin/hotels",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "admin",
+                    "hotels"
+                  ]
+                },
+                "description": "Create a new hotel (admin only)"
+              },
+              "response": [],
+              "event": {
+                "script": {
+                  "exec": [
+                    "pm.test(\"Status code is 201\", function () {",
+                    "  pm.response.to.have.status(201);",
+                    "});"
+                  ],
+                  "type": "text/javascript"
+                },
+                "listen": "test"
+              }
+            },
+            {
+              "name": "List Hotels",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{adminToken}}",
+                    "description": "Admin JWT token"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/admin/hotels?city=",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "admin",
+                    "hotels"
+                  ],
+                  "query": [
+                    {
+                      "key": "city",
+                      "value": "",
+                      "description": "Filter by city (optional)"
+                    }
+                  ]
+                },
+                "description": "List all hotels (admin only)"
+              },
+              "response": [],
+              "event": {
+                "script": {
+                  "exec": [
+                    "pm.test(\"Status code is 200\", function () {",
+                    "  pm.response.to.have.status(200);",
+                    "});"
+                  ],
+                  "type": "text/javascript"
+                },
+                "listen": "test"
+              }
+            },
+            {
+              "name": "Update Hotel",
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{adminToken}}",
+                    "description": "Admin JWT token"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"\",\n  \"city\": \"\",\n  \"address\": \"\",\n  \"facilities\": [],\n  \"checkin_time\": \"14:00\",\n  \"checkout_time\": \"12:00\",\n  \"cancellation_policy\": \"\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/admin/hotels/:id",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "admin",
+                    "hotels",
+                    ":id"
+                  ],
+                  "variable": [
+                    {
+                      "key": "id",
+                      "value": "",
+                      "description": "Hotel ID"
+                    }
+                  ]
+                },
+                "description": "Update a hotel (admin only)"
+              },
+              "response": [],
+              "event": {
+                "script": {
+                  "exec": [
+                    "pm.test(\"Status code is 200\", function () {",
+                    "  pm.response.to.have.status(200);",
+                    "});"
+                  ],
+                  "type": "text/javascript"
+                },
+                "listen": "test"
+              }
+            },
+            {
+              "name": "Delete Hotel",
+              "request": {
+                "method": "DELETE",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{adminToken}}",
+                    "description": "Admin JWT token"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/admin/hotels/:id",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "admin",
+                    "hotels",
+                    ":id"
+                  ],
+                  "variable": [
+                    {
+                      "key": "id",
+                      "value": "",
+                      "description": "Hotel ID"
+                    }
+                  ]
+                },
+                "description": "Delete a hotel (admin only)"
+              },
+              "response": [],
+              "event": {
+                "script": {
+                  "exec": [
+                    "pm.test(\"Status code is 204\", function () {",
+                    "  pm.response.to.have.status(204);",
+                    "});"
+                  ],
+                  "type": "text/javascript"
+                },
+                "listen": "test"
+              }
+            },
+            {
+              "name": "Add Property Photo",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{adminToken}}",
+                    "description": "Admin JWT token"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"url\": \"\",\n  \"caption\": \"\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/admin/hotels/:property_id/photos",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "admin",
+                    "hotels",
+                    ":property_id",
+                    "photos"
+                  ],
+                  "variable": [
+                    {
+                      "key": "property_id",
+                      "value": "",
+                      "description": "Property/Hotel ID"
+                    }
+                  ]
+                },
+                "description": "Add a photo to a hotel property (admin only)"
+              },
+              "response": [],
+              "event": {
+                "script": {
+                  "exec": [
+                    "pm.test(\"Status code is 201\", function () {",
+                    "  pm.response.to.have.status(201);",
+                    "});"
+                  ],
+                  "type": "text/javascript"
+                },
+                "listen": "test"
+              }
+            },
+            {
+              "name": "List Property Photos",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{adminToken}}",
+                    "description": "Admin JWT token"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/admin/hotels/:property_id/photos",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "admin",
+                    "hotels",
+                    ":property_id",
+                    "photos"
+                  ],
+                  "variable": [
+                    {
+                      "key": "property_id",
+                      "value": "",
+                      "description": "Property/Hotel ID"
+                    }
+                  ]
+                },
+                "description": "List all photos for a hotel property (admin only)"
+              },
+              "response": [],
+              "event": {
+                "script": {
+                  "exec": [
+                    "pm.test(\"Status code is 200\", function () {",
+                    "  pm.response.to.have.status(200);",
+                    "});"
+                  ],
+                  "type": "text/javascript"
+                },
+                "listen": "test"
+              }
+            }
+          ],
+          "description": "Admin hotel management endpoints"
+        },
+        {
+          "name": "room-types",
+          "item": [
+            {
+              "name": "Create Room Type",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{adminToken}}",
+                    "description": "Admin JWT token"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"property_id\": \"\",\n  \"name\": \"\",\n  \"description\": \"\",\n  \"base_price\": 0,\n  \"capacity\": 2,\n  \"facilities\": []\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/admin/room-types",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "admin",
+                    "room-types"
+                  ]
+                },
+                "description": "Create a new room type (admin only)"
+              },
+              "response": [],
+              "event": {
+                "script": {
+                  "exec": [
+                    "pm.test(\"Status code is 201\", function () {",
+                    "  pm.response.to.have.status(201);",
+                    "});"
+                  ],
+                  "type": "text/javascript"
+                },
+                "listen": "test"
+              }
+            },
+            {
+              "name": "List Room Types",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{adminToken}}",
+                    "description": "Admin JWT token"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/admin/room-types?property_id=",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "admin",
+                    "room-types"
+                  ],
+                  "query": [
+                    {
+                      "key": "property_id",
+                      "value": "",
+                      "description": "Filter by property ID (optional)"
+                    }
+                  ]
+                },
+                "description": "List all room types (admin only)"
+              },
+              "response": [],
+              "event": {
+                "script": {
+                  "exec": [
+                    "pm.test(\"Status code is 200\", function () {",
+                    "  pm.response.to.have.status(200);",
+                    "});"
+                  ],
+                  "type": "text/javascript"
+                },
+                "listen": "test"
+              }
+            },
+            {
+              "name": "Update Room Type",
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{adminToken}}",
+                    "description": "Admin JWT token"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"property_id\": \"\",\n  \"name\": \"\",\n  \"description\": \"\",\n  \"base_price\": 0,\n  \"capacity\": 2,\n  \"facilities\": []\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/admin/room-types/:id",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "admin",
+                    "room-types",
+                    ":id"
+                  ],
+                  "variable": [
+                    {
+                      "key": "id",
+                      "value": "",
+                      "description": "Room Type ID"
+                    }
+                  ]
+                },
+                "description": "Update a room type (admin only)"
+              },
+              "response": [],
+              "event": {
+                "script": {
+                  "exec": [
+                    "pm.test(\"Status code is 200\", function () {",
+                    "  pm.response.to.have.status(200);",
+                    "});"
+                  ],
+                  "type": "text/javascript"
+                },
+                "listen": "test"
+              }
+            },
+            {
+              "name": "Delete Room Type",
+              "request": {
+                "method": "DELETE",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{adminToken}}",
+                    "description": "Admin JWT token"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/admin/room-types/:id",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "admin",
+                    "room-types",
+                    ":id"
+                  ],
+                  "variable": [
+                    {
+                      "key": "id",
+                      "value": "",
+                      "description": "Room Type ID"
+                    }
+                  ]
+                },
+                "description": "Delete a room type (admin only)"
+              },
+              "response": [],
+              "event": {
+                "script": {
+                  "exec": [
+                    "pm.test(\"Status code is 204\", function () {",
+                    "  pm.response.to.have.status(204);",
+                    "});"
+                  ],
+                  "type": "text/javascript"
+                },
+                "listen": "test"
+              }
+            }
+          ],
+          "description": "Admin room type management endpoints"
+        },
+        {
+          "name": "rooms",
+          "item": [
+            {
+              "name": "Create Room",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{adminToken}}",
+                    "description": "Admin JWT token"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"property_id\": \"\",\n  \"room_type_id\": \"\",\n  \"room_number\": \"\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/admin/rooms",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "admin",
+                    "rooms"
+                  ]
+                },
+                "description": "Create a new room (admin only)"
+              },
+              "response": [],
+              "event": {
+                "script": {
+                  "exec": [
+                    "pm.test(\"Status code is 201\", function () {",
+                    "  pm.response.to.have.status(201);",
+                    "});"
+                  ],
+                  "type": "text/javascript"
+                },
+                "listen": "test"
+              }
+            },
+            {
+              "name": "List Rooms",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{adminToken}}",
+                    "description": "Admin JWT token"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/admin/rooms?property_id=&room_type_id=",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "admin",
+                    "rooms"
+                  ],
+                  "query": [
+                    {
+                      "key": "property_id",
+                      "value": "",
+                      "description": "Filter by property ID (optional)"
+                    },
+                    {
+                      "key": "room_type_id",
+                      "value": "",
+                      "description": "Filter by room type ID (optional)"
+                    }
+                  ]
+                },
+                "description": "List all rooms (admin only)"
+              },
+              "response": [],
+              "event": {
+                "script": {
+                  "exec": [
+                    "pm.test(\"Status code is 200\", function () {",
+                    "  pm.response.to.have.status(200);",
+                    "});"
+                  ],
+                  "type": "text/javascript"
+                },
+                "listen": "test"
+              }
+            },
+            {
+              "name": "Update Room",
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{adminToken}}",
+                    "description": "Admin JWT token"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"property_id\": \"\",\n  \"room_type_id\": \"\",\n  \"room_number\": \"\",\n  \"status\": \"Available\",\n  \"housekeeping_status\": \"Clean\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/admin/rooms/:id",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "admin",
+                    "rooms",
+                    ":id"
+                  ],
+                  "variable": [
+                    {
+                      "key": "id",
+                      "value": "",
+                      "description": "Room ID"
+                    }
+                  ]
+                },
+                "description": "Update a room (admin only)"
+              },
+              "response": [],
+              "event": {
+                "script": {
+                  "exec": [
+                    "pm.test(\"Status code is 200\", function () {",
+                    "  pm.response.to.have.status(200);",
+                    "});"
+                  ],
+                  "type": "text/javascript"
+                },
+                "listen": "test"
+              }
+            },
+            {
+              "name": "Delete Room",
+              "request": {
+                "method": "DELETE",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{adminToken}}",
+                    "description": "Admin JWT token"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/admin/rooms/:id",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "admin",
+                    "rooms",
+                    ":id"
+                  ],
+                  "variable": [
+                    {
+                      "key": "id",
+                      "value": "",
+                      "description": "Room ID"
+                    }
+                  ]
+                },
+                "description": "Delete a room (admin only)"
+              },
+              "response": [],
+              "event": {
+                "script": {
+                  "exec": [
+                    "pm.test(\"Status code is 204\", function () {",
+                    "  pm.response.to.have.status(204);",
+                    "});"
+                  ],
+                  "type": "text/javascript"
+                },
+                "listen": "test"
+              }
+            },
+            {
+              "name": "Set Room Rates",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{adminToken}}",
+                    "description": "Admin JWT token"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"room_id\": \"\",\n  \"dates\": [\"YYYY-MM-DD\"],\n  \"available_rooms\": 0,\n  \"linear_rate\": 0,\n  \"non_linear_rate\": {},\n  \"min_nights\": 1,\n  \"max_nights\": 30,\n  \"stop_sell\": false,\n  \"close_on_arrival\": false,\n  \"close_on_departure\": false\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/admin/rooms/:room_id/rates",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "admin",
+                    "rooms",
+                    ":room_id",
+                    "rates"
+                  ],
+                  "variable": [
+                    {
+                      "key": "room_id",
+                      "value": "",
+                      "description": "Room ID"
+                    }
+                  ]
+                },
+                "description": "Set rates for a room on specific dates (admin only)"
+              },
+              "response": [],
+              "event": {
+                "script": {
+                  "exec": [
+                    "pm.test(\"Status code is 200\", function () {",
+                    "  pm.response.to.have.status(200);",
+                    "});"
+                  ],
+                  "type": "text/javascript"
+                },
+                "listen": "test"
+              }
+            },
+            {
+              "name": "Get Room Rates",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{adminToken}}",
+                    "description": "Admin JWT token"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/admin/rooms/:room_id/rates?start=&end=",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "admin",
+                    "rooms",
+                    ":room_id",
+                    "rates"
+                  ],
+                  "query": [
+                    {
+                      "key": "start",
+                      "value": "",
+                      "description": "Start date (YYYY-MM-DD)"
+                    },
+                    {
+                      "key": "end",
+                      "value": "",
+                      "description": "End date (YYYY-MM-DD)"
+                    }
+                  ],
+                  "variable": [
+                    {
+                      "key": "room_id",
+                      "value": "",
+                      "description": "Room ID"
+                    }
+                  ]
+                },
+                "description": "Get rates for a room (admin only)"
+              },
+              "response": [],
+              "event": {
+                "script": {
+                  "exec": [
+                    "pm.test(\"Status code is 200\", function () {",
+                    "  pm.response.to.have.status(200);",
+                    "});"
+                  ],
+                  "type": "text/javascript"
+                },
+                "listen": "test"
+              }
+            }
+          ],
+          "description": "Admin room management endpoints"
+        },
+        {
+          "name": "photos",
+          "item": [
+            {
+              "name": "Add Room Photo",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{adminToken}}",
+                    "description": "Admin JWT token"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"url\": \"\",\n  \"caption\": \"\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/admin/room-photos?property_id=&room_type_id=&room_id=",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "admin",
+                    "room-photos"
+                  ],
+                  "query": [
+                    {
+                      "key": "property_id",
+                      "value": "",
+                      "description": "Property ID"
+                    },
+                    {
+                      "key": "room_type_id",
+                      "value": "",
+                      "description": "Room Type ID"
+                    },
+                    {
+                      "key": "room_id",
+                      "value": "",
+                      "description": "Room ID"
+                    }
+                  ]
+                },
+                "description": "Add a photo to a room (admin only)"
+              },
+              "response": [],
+              "event": {
+                "script": {
+                  "exec": [
+                    "pm.test(\"Status code is 201\", function () {",
+                    "  pm.response.to.have.status(201);",
+                    "});"
+                  ],
+                  "type": "text/javascript"
+                },
+                "listen": "test"
+              }
+            },
+            {
+              "name": "List Room Photos",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{adminToken}}",
+                    "description": "Admin JWT token"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/admin/room-photos?room_type_id=&room_id=",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "admin",
+                    "room-photos"
+                  ],
+                  "query": [
+                    {
+                      "key": "room_type_id",
+                      "value": "",
+                      "description": "Room Type ID (required if room_id is empty)"
+                    },
+                    {
+                      "key": "room_id",
+                      "value": "",
+                      "description": "Room ID (required if room_type_id is empty)"
+                    }
+                  ]
+                },
+                "description": "List photos for a room (admin only)"
+              },
+              "response": [],
+              "event": {
+                "script": {
+                  "exec": [
+                    "pm.test(\"Status code is 200\", function () {",
+                    "  pm.response.to.have.status(200);",
+                    "});"
+                  ],
+                  "type": "text/javascript"
+                },
+                "listen": "test"
+              }
+            },
+            {
+              "name": "Delete Property Photo",
+              "request": {
+                "method": "DELETE",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{adminToken}}",
+                    "description": "Admin JWT token"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/admin/photos/property/:id",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "admin",
+                    "photos",
+                    "property",
+                    ":id"
+                  ],
+                  "variable": [
+                    {
+                      "key": "id",
+                      "value": "",
+                      "description": "Photo ID"
+                    }
+                  ]
+                },
+                "description": "Delete a property photo (admin only)"
+              },
+              "response": [],
+              "event": {
+                "script": {
+                  "exec": [
+                    "pm.test(\"Status code is 204\", function () {",
+                    "  pm.response.to.have.status(204);",
+                    "});"
+                  ],
+                  "type": "text/javascript"
+                },
+                "listen": "test"
+              }
+            },
+            {
+              "name": "Delete Room Photo",
+              "request": {
+                "method": "DELETE",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{adminToken}}",
+                    "description": "Admin JWT token"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/admin/photos/room/:id",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "admin",
+                    "photos",
+                    "room",
+                    ":id"
+                  ],
+                  "variable": [
+                    {
+                      "key": "id",
+                      "value": "",
+                      "description": "Photo ID"
+                    }
+                  ]
+                },
+                "description": "Delete a room photo (admin only)"
+              },
+              "response": [],
+              "event": {
+                "script": {
+                  "exec": [
+                    "pm.test(\"Status code is 204\", function () {",
+                    "  pm.response.to.have.status(204);",
+                    "});"
+                  ],
+                  "type": "text/javascript"
+                },
+                "listen": "test"
+              }
+            }
+          ],
+          "description": "Admin photo management endpoints"
+        },
+        {
+          "name": "users",
+          "item": [
+            {
+              "name": "Create Admin",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{adminToken}}",
+                    "description": "Admin JWT token"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"email\": \"\",\n  \"password\": \"\",\n  \"property_id\": \"\",\n  \"role\": \"\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/admin/users",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "admin",
+                    "users"
+                  ]
+                },
+                "description": "Create a new admin user (admin only)"
+              },
+              "response": [],
+              "event": {
+                "script": {
+                  "exec": [
+                    "pm.test(\"Status code is 201\", function () {",
+                    "  pm.response.to.have.status(201);",
+                    "});"
+                  ],
+                  "type": "text/javascript"
+                },
+                "listen": "test"
+              }
+            },
+            {
+              "name": "List Admins",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{adminToken}}",
+                    "description": "Admin JWT token"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/admin/users?property_id=",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "admin",
+                    "users"
+                  ],
+                  "query": [
+                    {
+                      "key": "property_id",
+                      "value": "",
+                      "description": "Filter by property ID (optional)"
+                    }
+                  ]
+                },
+                "description": "List all admin users (admin only)"
+              },
+              "response": [],
+              "event": {
+                "script": {
+                  "exec": [
+                    "pm.test(\"Status code is 200\", function () {",
+                    "  pm.response.to.have.status(200);",
+                    "});"
+                  ],
+                  "type": "text/javascript"
+                },
+                "listen": "test"
+              }
+            },
+            {
+              "name": "Update Admin",
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{adminToken}}",
+                    "description": "Admin JWT token"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"role\": \"\",\n  \"property_id\": \"\",\n  \"is_active\": true\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/admin/users/:id",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "admin",
+                    "users",
+                    ":id"
+                  ],
+                  "variable": [
+                    {
+                      "key": "id",
+                      "value": "",
+                      "description": "Admin User ID"
+                    }
+                  ]
+                },
+                "description": "Update an admin user (admin only)"
+              },
+              "response": [],
+              "event": {
+                "script": {
+                  "exec": [
+                    "pm.test(\"Status code is 200\", function () {",
+                    "  pm.response.to.have.status(200);",
+                    "});"
+                  ],
+                  "type": "text/javascript"
+                },
+                "listen": "test"
+              }
+            },
+            {
+              "name": "Activate Admin",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{adminToken}}",
+                    "description": "Admin JWT token"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/admin/users/:id/activate",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "admin",
+                    "users",
+                    ":id",
+                    "activate"
+                  ],
+                  "variable": [
+                    {
+                      "key": "id",
+                      "value": "",
+                      "description": "Admin User ID"
+                    }
+                  ]
+                },
+                "description": "Activate an admin user (admin only)"
+              },
+              "response": [],
+              "event": {
+                "script": {
+                  "exec": [
+                    "pm.test(\"Status code is 200\", function () {",
+                    "  pm.response.to.have.status(200);",
+                    "});"
+                  ],
+                  "type": "text/javascript"
+                },
+                "listen": "test"
+              }
+            },
+            {
+              "name": "Deactivate Admin",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{adminToken}}",
+                    "description": "Admin JWT token"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/admin/users/:id/deactivate",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "admin",
+                    "users",
+                    ":id",
+                    "deactivate"
+                  ],
+                  "variable": [
+                    {
+                      "key": "id",
+                      "value": "",
+                      "description": "Admin User ID"
+                    }
+                  ]
+                },
+                "description": "Deactivate an admin user (admin only)"
+              },
+              "response": [],
+              "event": {
+                "script": {
+                  "exec": [
+                    "pm.test(\"Status code is 200\", function () {",
+                    "  pm.response.to.have.status(200);",
+                    "});"
+                  ],
+                  "type": "text/javascript"
+                },
+                "listen": "test"
+              }
+            }
+          ],
+          "description": "Admin user management endpoints"
+        },
+        {
+          "name": "bookings",
+          "item": [
+            {
+              "name": "List Bookings",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{adminToken}}",
+                    "description": "Admin JWT token"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/admin/bookings?property_id=&status=&start=&end=",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "admin",
+                    "bookings"
+                  ],
+                  "query": [
+                    {
+                      "key": "property_id",
+                      "value": "",
+                      "description": "Filter by property ID (optional)"
+                    },
+                    {
+                      "key": "status",
+                      "value": "",
+                      "description": "Filter by booking status (optional)"
+                    },
+                    {
+                      "key": "start",
+                      "value": "",
+                      "description": "Start date (YYYY-MM-DD)"
+                    },
+                    {
+                      "key": "end",
+                      "value": "",
+                      "description": "End date (YYYY-MM-DD)"
+                    }
+                  ]
+                },
+                "description": "List all bookings (admin only)"
+              },
+              "response": [],
+              "event": {
+                "script": {
+                  "exec": [
+                    "pm.test(\"Status code is 200\", function () {",
+                    "  pm.response.to.have.status(200);",
+                    "});"
+                  ],
+                  "type": "text/javascript"
+                },
+                "listen": "test"
+              }
+            },
+            {
+              "name": "Update Booking Status",
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{adminToken}}",
+                    "description": "Admin JWT token"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"status\": \"Confirmed\",\n  \"note\": \"\",\n  \"refund_amount\": 0\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/admin/bookings/:id/status",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "admin",
+                    "bookings",
+                    ":id",
+                    "status"
+                  ],
+                  "variable": [
+                    {
+                      "key": "id",
+                      "value": "{{bookingId}}",
+                      "description": "Booking ID"
+                    }
+                  ]
+                },
+                "description": "Update booking status (admin only)"
+              },
+              "response": [],
+              "event": {
+                "script": {
+                  "exec": [
+                    "pm.test(\"Status code is 200\", function () {",
+                    "  pm.response.to.have.status(200);",
+                    "});"
+                  ],
+                  "type": "text/javascript"
+                },
+                "listen": "test"
+              }
+            }
+          ],
+          "description": "Admin booking oversight endpoints"
+        },
+        {
+          "name": "reports",
+          "item": [
+            {
+              "name": "Get Summary Report",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{adminToken}}",
+                    "description": "Admin JWT token"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/admin/reports/summary?start=&end=",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "admin",
+                    "reports",
+                    "summary"
+                  ],
+                  "query": [
+                    {
+                      "key": "start",
+                      "value": "",
+                      "description": "Start date (YYYY-MM-DD)"
+                    },
+                    {
+                      "key": "end",
+                      "value": "",
+                      "description": "End date (YYYY-MM-DD)"
+                    }
+                  ]
+                },
+                "description": "Get summary report for a date range (admin only)"
+              },
+              "response": [],
+              "event": {
+                "script": {
+                  "exec": [
+                    "pm.test(\"Status code is 200\", function () {",
+                    "  pm.response.to.have.status(200);",
+                    "});"
+                  ],
+                  "type": "text/javascript"
+                },
+                "listen": "test"
+              }
+            }
+          ],
+          "description": "Admin reporting endpoints"
+        }
+      ],
+      "description": "Admin-only endpoints (requires admin authentication)"
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8080",
+      "type": "string"
+    },
+    {
+      "key": "token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "adminToken",
+      "value": "",
+      "type": "string"
+    }
+  ]
+}

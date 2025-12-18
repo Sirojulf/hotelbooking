@@ -16,5 +16,7 @@ type Booking struct {
 	Nights     int           `json:"nights" db:"nights"`
 	TotalPrice float64       `json:"total_price" db:"total_price"`
 	Status     BookingStatus `json:"booking_status" db:"booking_status"`
+	RefundAmount float64     `json:"refund_amount,omitempty" db:"refund_amount"`
+	Note         string      `json:"note,omitempty" db:"note"`
 	CreatedAt  time.Time     `json:"created_at" db:"created_at"`
 }

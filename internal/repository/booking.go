@@ -14,6 +14,9 @@ type BookingRepo interface {
 	CreateBooking(booking models.Booking) error
 	CheckAvailability(roomID string, checkIn, checkOut string) (bool, error)
 	GetBookingsByGuestID(guestID string) ([]models.Booking, error)
+	GetBookingByID(bookingID string) (*models.Booking, error)
+	ListBookings(propertyID, status, startDate, endDate string) ([]models.Booking, error)
+	UpdateBookingStatus(bookingID string, status models.BookingStatus, note string, refundAmount float64) (*models.Booking, error)
 }
 
 type bookingRepo struct{}
@@ -84,4 +87,85 @@ func (r *bookingRepo) GetBookingsByGuestID(guestID string) ([]models.Booking, er
 	}
 
 	return bookings, nil
+}
+
+func (r *bookingRepo) GetBookingByID(bookingID string) (*models.Booking, error) {
+	if config.SupabaseClient == nil {
+		return nil, fmt.Errorf("supabase client is not initialized")
+	}
+	resp, _, err := config.SupabaseClient.
+		From("bookings").
+		Select("*", "", false).
+		Eq("id", bookingID).
+		Single().
+		Execute()
+	if err != nil {
+		return nil, fmt.Errorf("gagal mengambil booking: %v", err)
+	}
+	var booking models.Booking
+	if err := json.Unmarshal(resp, &booking); err != nil {
+		return nil, err
+	}
+	return &booking, nil
+}
+
+func (r *bookingRepo) ListBookings(propertyID, status, startDate, endDate string) ([]models.Booking, error) {
+	if config.SupabaseClient == nil {
+		return nil, fmt.Errorf("supabase client is not initialized")
+	}
+	q := config.SupabaseClient.
+		From("bookings").
+		Select("*", "", false)
+	if propertyID != "" {
+		q = q.Eq("property_id", propertyID)
+	}
+	if status != "" {
+		q = q.Eq("booking_status", status)
+	}
+	if startDate != "" {
+		q = q.Filter("check_in", "gte", startDate)
+	}
+	if endDate != "" {
+		q = q.Filter("check_out", "lte", endDate)
+	}
+	resp, _, err := q.Execute()
+	if err != nil {
+		return nil, fmt.Errorf("gagal mengambil daftar booking: %v", err)
+	}
+	var bookings []models.Booking
+	if err := json.Unmarshal(resp, &bookings); err != nil {
+		return nil, err
+	}
+	return bookings, nil
+}
+
+func (r *bookingRepo) UpdateBookingStatus(bookingID string, status models.BookingStatus, note string, refundAmount float64) (*models.Booking, error) {
+	if config.SupabaseClient == nil {
+		return nil, fmt.Errorf("supabase client is not initialized")
+	}
+	updateData := map[string]any{
+		"booking_status": status,
+	}
+	if note != "" {
+		updateData["note"] = note
+	}
+	if refundAmount != 0 || status == models.BookingStatusCancel {
+		updateData["refund_amount"] = refundAmount
+	}
+
+	resp, _, err := config.SupabaseClient.
+		From("bookings").
+		Update(updateData, "", "").
+		Eq("id", bookingID).
+		Single().
+		Execute()
+	if err != nil {
+		return nil, fmt.Errorf("gagal memperbarui status booking: %v", err)
+	}
+
+	var booking models.Booking
+	if err := json.Unmarshal(resp, &booking); err != nil {
+		return nil, err
+	}
+	return &booking, nil
 }

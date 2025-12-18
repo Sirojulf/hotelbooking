@@ -38,6 +38,15 @@ func NewGuestHandler(svc service.GuestService) *GuestHandler {
 }
 
 // POST /api/v1/auth/guest/register
+// @Summary Register guest
+// @Tags Auth
+// @Accept json
+// @Produce json
+// @Param payload body RegisterGuestRequest true "Register guest"
+// @Success 201 {object} models.Guest
+// @Failure 400 {object} map[string]string
+// @Failure 422 {object} map[string]string
+// @Router /auth/guest/register [post]
 func (h *GuestHandler) Register(c echo.Context) error {
 	var req RegisterGuestRequest
 	if err := c.Bind(&req); err != nil {
@@ -62,6 +71,15 @@ func (h *GuestHandler) Register(c echo.Context) error {
 }
 
 // POST /api/v1/auth/guest/login
+// @Summary Login guest
+// @Tags Auth
+// @Accept json
+// @Produce json
+// @Param payload body LoginRequest true "Login payload (email or phone)"
+// @Success 200 {object} TokenResponseDoc
+// @Failure 400 {object} map[string]string
+// @Failure 401 {object} map[string]string
+// @Router /auth/guest/login [post]
 func (h *GuestHandler) Login(c echo.Context) error {
 	var req LoginRequest
 	if err := c.Bind(&req); err != nil {
@@ -76,6 +94,14 @@ func (h *GuestHandler) Login(c echo.Context) error {
 }
 
 // GET /api/v1/hotels?city=Jakarta
+// @Summary Search hotels by city
+// @Tags Hotels
+// @Produce json
+// @Param city query string true "City name"
+// @Success 200 {array} models.Properties
+// @Failure 400 {object} map[string]string
+// @Failure 500 {object} map[string]string
+// @Router /hotels [get]
 func (h *GuestHandler) SearchHotels(c echo.Context) error {
 	city := c.QueryParam("city")
 	if city == "" {
@@ -91,6 +117,13 @@ func (h *GuestHandler) SearchHotels(c echo.Context) error {
 }
 
 // GET /api/v1/hotels/:id
+// @Summary Get hotel detail
+// @Tags Hotels
+// @Produce json
+// @Param id path string true "Hotel ID"
+// @Success 200 {object} models.PropertyDetailResponse
+// @Failure 404 {object} map[string]string
+// @Router /hotels/{id} [get]
 func (h *GuestHandler) GetHotelDetail(c echo.Context) error {
 	id := c.Param("id")
 	result, err := h.Svc.GetHotelDetails(id)
@@ -101,6 +134,14 @@ func (h *GuestHandler) GetHotelDetail(c echo.Context) error {
 }
 
 // GET /api/v1/guests/bookings  (perlu Auth middleware)
+// @Summary Get my bookings
+// @Tags Guests
+// @Security BearerAuth
+// @Produce json
+// @Success 200 {array} models.Booking
+// @Failure 401 {object} map[string]string
+// @Failure 500 {object} map[string]string
+// @Router /guests/bookings [get]
 func (h *GuestHandler) GetMyBookings(c echo.Context) error {
 	user, ok := c.Get("user").(*types.User)
 	if !ok || user == nil {
@@ -116,6 +157,14 @@ func (h *GuestHandler) GetMyBookings(c echo.Context) error {
 }
 
 // GET /api/v1/guests/me
+// @Summary Get my profile
+// @Tags Guests
+// @Security BearerAuth
+// @Produce json
+// @Success 200 {object} models.Guest
+// @Failure 401 {object} map[string]string
+// @Failure 500 {object} map[string]string
+// @Router /guests/me [get]
 func (h *GuestHandler) GetMyProfile(c echo.Context) error {
 	user, ok := c.Get("user").(*types.User)
 	if !ok || user == nil {

@@ -1,0 +1,2288 @@
+basePath: /api/v1
+definitions:
+  handler.AdminLoginRequest:
+    properties:
+      email:
+        type: string
+      password:
+        type: string
+    type: object
+  handler.AdminLoginResponseDoc:
+    properties:
+      admin:
+        $ref: '#/definitions/models.Admin'
+      session:
+        $ref: '#/definitions/handler.TokenResponseDoc'
+    type: object
+  handler.AvailabilityResponse:
+    properties:
+      available:
+        type: boolean
+      currency:
+        type: string
+      nightly_rates:
+        items:
+          $ref: '#/definitions/service.NightlyRate'
+        type: array
+      nights:
+        type: integer
+      total_price:
+        type: number
+    type: object
+  handler.BookingCancelResponse:
+    properties:
+      booking:
+        $ref: '#/definitions/models.Booking'
+      payment:
+        $ref: '#/definitions/models.Payment'
+    type: object
+  handler.CreateAdminRequest:
+    properties:
+      email:
+        type: string
+      password:
+        type: string
+      property_id:
+        description: bisa kosong kalau mau super admin
+        type: string
+      role:
+        type: string
+    type: object
+  handler.CreateBookingRequest:
+    properties:
+      check_in:
+        type: string
+      check_out:
+        type: string
+      property_id:
+        type: string
+      room_id:
+        type: string
+    type: object
+  handler.CreateHotelRequest:
+    properties:
+      address:
+        type: string
+      city:
+        type: string
+      facilities:
+        items:
+          type: string
+        type: array
+      hotel_code:
+        type: string
+      name:
+        type: string
+    type: object
+  handler.CreateRoomRequest:
+    properties:
+      property_id:
+        type: string
+      room_number:
+        type: string
+      room_type_id:
+        type: string
+    type: object
+  handler.CreateRoomTypeRequest:
+    properties:
+      base_price:
+        type: number
+      capacity:
+        type: integer
+      description:
+        type: string
+      facilities:
+        items:
+          type: string
+        type: array
+      name:
+        type: string
+      property_id:
+        type: string
+    type: object
+  handler.LoginRequest:
+    properties:
+      login:
+        type: string
+      password:
+        type: string
+    type: object
+  handler.PayBookingRequest:
+    properties:
+      provider:
+        type: string
+      reference:
+        type: string
+    type: object
+  handler.PaymentInvoiceResponse:
+    properties:
+      invoice:
+        $ref: '#/definitions/models.Invoice'
+      payment:
+        $ref: '#/definitions/models.Payment'
+    type: object
+  handler.PhotoRequest:
+    properties:
+      caption:
+        type: string
+      url:
+        type: string
+    type: object
+  handler.RegisterGuestRequest:
+    properties:
+      country:
+        type: string
+      email:
+        type: string
+      first_name:
+        type: string
+      gender:
+        $ref: '#/definitions/models.Gender'
+      last_name:
+        type: string
+      password:
+        type: string
+      phone:
+        type: string
+    type: object
+  handler.RoomRateDoc:
+    properties:
+      available_rooms:
+        type: integer
+      close_on_arrival:
+        type: boolean
+      close_on_departure:
+        type: boolean
+      created_at:
+        type: string
+      date:
+        type: string
+      id:
+        type: string
+      linear_rate:
+        type: number
+      max_nights:
+        type: integer
+      min_nights:
+        type: integer
+      non_linear_rate: {}
+      room_id:
+        type: string
+      stop_sell:
+        type: boolean
+    type: object
+  handler.RoomRateRequestDoc:
+    properties:
+      available_rooms:
+        type: integer
+      close_on_arrival:
+        type: boolean
+      close_on_departure:
+        type: boolean
+      dates:
+        items:
+          type: string
+        type: array
+      linear_rate:
+        type: number
+      max_nights:
+        type: integer
+      min_nights:
+        type: integer
+      non_linear_rate: {}
+      room_id:
+        type: string
+      stop_sell:
+        type: boolean
+    type: object
+  handler.TokenResponseDoc:
+    properties:
+      access_token:
+        type: string
+      expires_at:
+        type: integer
+      expires_in:
+        type: integer
+      refresh_token:
+        type: string
+      token_type:
+        type: string
+      user:
+        additionalProperties: true
+        type: object
+    type: object
+  handler.UpdateAdminRequest:
+    properties:
+      is_active:
+        type: boolean
+      property_id:
+        type: string
+      role:
+        type: string
+    type: object
+  handler.UpdateBookingStatusRequest:
+    properties:
+      note:
+        type: string
+      refund_amount:
+        type: number
+      status:
+        $ref: '#/definitions/models.BookingStatus'
+    type: object
+  handler.UpdateHotelRequest:
+    properties:
+      address:
+        type: string
+      cancellation_policy:
+        type: string
+      checkin_time:
+        type: string
+      checkout_time:
+        type: string
+      city:
+        type: string
+      facilities:
+        items:
+          type: string
+        type: array
+      name:
+        type: string
+    type: object
+  handler.UpdateRoomRequest:
+    properties:
+      housekeeping_status:
+        $ref: '#/definitions/models.HousekeepingStatus'
+      property_id:
+        type: string
+      room_number:
+        type: string
+      room_type_id:
+        type: string
+      status:
+        $ref: '#/definitions/models.RoomStatus'
+    type: object
+  handler.UpdateRoomTypeRequest:
+    properties:
+      base_price:
+        type: number
+      capacity:
+        type: integer
+      description:
+        type: string
+      facilities:
+        items:
+          type: string
+        type: array
+      name:
+        type: string
+      property_id:
+        type: string
+    type: object
+  models.Admin:
+    properties:
+      created_at:
+        type: string
+      email:
+        type: string
+      id:
+        type: string
+      is_active:
+        type: boolean
+      property_id:
+        type: string
+      role:
+        type: string
+    type: object
+  models.Booking:
+    properties:
+      booking_status:
+        $ref: '#/definitions/models.BookingStatus'
+      check_in:
+        type: string
+      check_out:
+        type: string
+      created_at:
+        type: string
+      guest_id:
+        type: string
+      id:
+        type: string
+      nights:
+        type: integer
+      note:
+        type: string
+      property_id:
+        type: string
+      refund_amount:
+        type: number
+      room_id:
+        type: string
+      total_price:
+        type: number
+    type: object
+  models.BookingStatus:
+    enum:
+    - New
+    - Confirmed
+    - Cancelled
+    - CheckedIn
+    - CheckedOut
+    - NoShow
+    type: string
+    x-enum-varnames:
+    - BookingStatusNew
+    - BookingStatusConfirmed
+    - BookingStatusCancel
+    - BookingStatusCheckedIn
+    - BookingStatusCheckedOut
+    - BookingStatusNoShow
+  models.Gender:
+    enum:
+    - Male
+    - Female
+    type: string
+    x-enum-varnames:
+    - GenderMale
+    - GenderFemale
+  models.Guest:
+    properties:
+      address:
+        type: string
+      city:
+        type: string
+      country:
+        type: string
+      email:
+        type: string
+      first_name:
+        type: string
+      gender:
+        $ref: '#/definitions/models.Gender'
+      guest_type:
+        $ref: '#/definitions/models.GuestType'
+      id:
+        type: string
+      last_name:
+        type: string
+      nationality:
+        type: string
+      phone:
+        type: string
+      postal_code:
+        type: string
+      state:
+        type: string
+      vip_status:
+        $ref: '#/definitions/models.VIPStatus'
+    type: object
+  models.GuestType:
+    enum:
+    - Adult
+    - Child
+    type: string
+    x-enum-varnames:
+    - GuestTypeAdult
+    - GuestTypeChild
+  models.HousekeepingStatus:
+    enum:
+    - Clean
+    - Dirty
+    - Inspected
+    - Pickup
+    - OutOfOrder
+    - OutOfService
+    type: string
+    x-enum-varnames:
+    - HousekeepingStatusClean
+    - HousekeepingStatusDirty
+    - HousekeepingStatusInspected
+    - HousekeepingStatusPickup
+    - HousekeepingStatusOutOfOrder
+    - HousekeepingStatusOutOfService
+  models.Invoice:
+    properties:
+      amount:
+        type: number
+      booking_id:
+        type: string
+      id:
+        type: string
+      invoice_number:
+        type: string
+      issued_at:
+        type: string
+      status:
+        $ref: '#/definitions/models.PaymentStatus'
+    type: object
+  models.Payment:
+    properties:
+      amount:
+        type: number
+      booking_id:
+        type: string
+      created_at:
+        type: string
+      id:
+        type: string
+      paid_at:
+        type: string
+      provider:
+        type: string
+      reference:
+        type: string
+      status:
+        $ref: '#/definitions/models.PaymentStatus'
+    type: object
+  models.PaymentStatus:
+    enum:
+    - Pending
+    - Paid
+    - Refunded
+    type: string
+    x-enum-varnames:
+    - PaymentStatusPending
+    - PaymentStatusPaid
+    - PaymentStatusRefunded
+  models.Properties:
+    properties:
+      address:
+        type: string
+      auth_code:
+        type: string
+      cancellation_policy:
+        type: string
+      checkin_time:
+        type: string
+      checkout_time:
+        type: string
+      city:
+        type: string
+      created_at:
+        type: string
+      facilities:
+        items:
+          type: string
+        type: array
+      hotel_code:
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+    type: object
+  models.PropertyDetailResponse:
+    properties:
+      property:
+        $ref: '#/definitions/models.Properties'
+      room_types:
+        items:
+          $ref: '#/definitions/models.RoomType'
+        type: array
+    type: object
+  models.PropertyPhoto:
+    properties:
+      caption:
+        type: string
+      created_at:
+        type: string
+      id:
+        type: string
+      property_id:
+        type: string
+      url:
+        type: string
+    type: object
+  models.Room:
+    properties:
+      created_at:
+        type: string
+      housekeeping_status:
+        $ref: '#/definitions/models.HousekeepingStatus'
+      id:
+        type: string
+      property_id:
+        type: string
+      room_number:
+        type: string
+      room_type_detail:
+        $ref: '#/definitions/models.RoomType'
+      room_type_id:
+        type: string
+      status:
+        $ref: '#/definitions/models.RoomStatus'
+    type: object
+  models.RoomPhoto:
+    properties:
+      caption:
+        type: string
+      created_at:
+        type: string
+      id:
+        type: string
+      property_id:
+        type: string
+      room_id:
+        type: string
+      room_type_id:
+        type: string
+      url:
+        type: string
+    type: object
+  models.RoomStatus:
+    enum:
+    - Available
+    - Occupied
+    - OutOfOrder
+    type: string
+    x-enum-varnames:
+    - RoomStatusAvailable
+    - RoomStatusOccupied
+    - RoomStatusOutOfOrder
+  models.RoomType:
+    properties:
+      base_price:
+        type: number
+      capacity:
+        type: integer
+      created_at:
+        type: string
+      description:
+        type: string
+      facilities:
+        items:
+          type: string
+        type: array
+      id:
+        type: string
+      name:
+        type: string
+      property_id:
+        type: string
+    type: object
+  models.VIPStatus:
+    enum:
+    - Bronze
+    - Silver
+    - Gold
+    - Platinum
+    type: string
+    x-enum-varnames:
+    - VIPStatusBronze
+    - VIPStatusSilver
+    - VIPStatusGold
+    - VIPStatusPlatinum
+  service.BookingCreateResult:
+    properties:
+      booking:
+        $ref: '#/definitions/models.Booking'
+      invoice:
+        $ref: '#/definitions/models.Invoice'
+      payment:
+        $ref: '#/definitions/models.Payment'
+      quote:
+        $ref: '#/definitions/service.BookingQuote'
+    type: object
+  service.BookingQuote:
+    properties:
+      available:
+        type: boolean
+      currency:
+        type: string
+      nightly_rates:
+        items:
+          $ref: '#/definitions/service.NightlyRate'
+        type: array
+      nights:
+        type: integer
+      total_price:
+        type: number
+    type: object
+  service.NightlyRate:
+    properties:
+      date:
+        type: string
+      rate:
+        type: number
+    type: object
+  service.ReportSummary:
+    properties:
+      adr:
+        type: number
+      occupancy:
+        type: number
+      occupancy_by_date:
+        additionalProperties:
+          format: float64
+          type: number
+        type: object
+      revenue:
+        type: number
+      revpar:
+        type: number
+      total_bookings:
+        type: integer
+    type: object
+info:
+  contact: {}
+  description: REST API for hotel booking management (guest, booking, admin inventory,
+    reports).
+  title: Hotel Booking API
+  version: "1.0"
+paths:
+  /admin/bookings:
+    get:
+      parameters:
+      - description: Property ID
+        in: query
+        name: property_id
+        type: string
+      - description: Booking status
+        in: query
+        name: status
+        type: string
+      - description: Start date (YYYY-MM-DD)
+        in: query
+        name: start
+        type: string
+      - description: End date (YYYY-MM-DD)
+        in: query
+        name: end
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.Booking'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: List bookings
+      tags:
+      - Bookings
+  /admin/bookings/{id}/status:
+    put:
+      consumes:
+      - application/json
+      parameters:
+      - description: Booking ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Update booking status
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/handler.UpdateBookingStatusRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Booking'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "422":
+          description: Unprocessable Entity
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Update booking status
+      tags:
+      - Bookings
+  /admin/hotels:
+    get:
+      parameters:
+      - description: City filter
+        in: query
+        name: city
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.Properties'
+            type: array
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: List hotels
+      tags:
+      - Inventory
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Create hotel
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/handler.CreateHotelRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/models.Properties'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Create hotel
+      tags:
+      - Inventory
+  /admin/hotels/{id}:
+    delete:
+      parameters:
+      - description: Hotel ID
+        in: path
+        name: id
+        required: true
+        type: string
+      responses:
+        "204":
+          description: No Content
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "422":
+          description: Unprocessable Entity
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Delete hotel
+      tags:
+      - Inventory
+    put:
+      consumes:
+      - application/json
+      parameters:
+      - description: Hotel ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Update hotel
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/handler.UpdateHotelRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Properties'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "422":
+          description: Unprocessable Entity
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Update hotel
+      tags:
+      - Inventory
+  /admin/hotels/{property_id}/photos:
+    get:
+      parameters:
+      - description: Property ID
+        in: path
+        name: property_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.PropertyPhoto'
+            type: array
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: List property photos
+      tags:
+      - Inventory
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Property ID
+        in: path
+        name: property_id
+        required: true
+        type: string
+      - description: Photo payload
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/handler.PhotoRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "422":
+          description: Unprocessable Entity
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Add property photo
+      tags:
+      - Inventory
+  /admin/photos/property/{id}:
+    delete:
+      parameters:
+      - description: Photo ID
+        in: path
+        name: id
+        required: true
+        type: string
+      responses:
+        "204":
+          description: No Content
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "422":
+          description: Unprocessable Entity
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Delete property photo
+      tags:
+      - Inventory
+  /admin/photos/room/{id}:
+    delete:
+      parameters:
+      - description: Photo ID
+        in: path
+        name: id
+        required: true
+        type: string
+      responses:
+        "204":
+          description: No Content
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "422":
+          description: Unprocessable Entity
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Delete room photo
+      tags:
+      - Inventory
+  /admin/reports/summary:
+    get:
+      parameters:
+      - description: Property ID
+        in: query
+        name: property_id
+        type: string
+      - description: Start date (YYYY-MM-DD)
+        in: query
+        name: start
+        required: true
+        type: string
+      - description: End date (YYYY-MM-DD)
+        in: query
+        name: end
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/service.ReportSummary'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get summary report
+      tags:
+      - Reports
+  /admin/room-photos:
+    get:
+      parameters:
+      - description: Room type ID
+        in: query
+        name: room_type_id
+        type: string
+      - description: Room ID
+        in: query
+        name: room_id
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.RoomPhoto'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: List room photos
+      tags:
+      - Inventory
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Property ID
+        in: query
+        name: property_id
+        type: string
+      - description: Room type ID
+        in: query
+        name: room_type_id
+        type: string
+      - description: Room ID
+        in: query
+        name: room_id
+        type: string
+      - description: Photo payload
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/handler.PhotoRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "422":
+          description: Unprocessable Entity
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Add room photo
+      tags:
+      - Inventory
+  /admin/room-types:
+    get:
+      parameters:
+      - description: Property ID
+        in: query
+        name: property_id
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.RoomType'
+            type: array
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: List room types
+      tags:
+      - Inventory
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Create room type
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/handler.CreateRoomTypeRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/models.RoomType'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "422":
+          description: Unprocessable Entity
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Create room type
+      tags:
+      - Inventory
+  /admin/room-types/{id}:
+    delete:
+      parameters:
+      - description: Room type ID
+        in: path
+        name: id
+        required: true
+        type: string
+      responses:
+        "204":
+          description: No Content
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "422":
+          description: Unprocessable Entity
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Delete room type
+      tags:
+      - Inventory
+    put:
+      consumes:
+      - application/json
+      parameters:
+      - description: Room type ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Update room type
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/handler.UpdateRoomTypeRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.RoomType'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "422":
+          description: Unprocessable Entity
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Update room type
+      tags:
+      - Inventory
+  /admin/rooms:
+    get:
+      parameters:
+      - description: Property ID
+        in: query
+        name: property_id
+        type: string
+      - description: Room type ID
+        in: query
+        name: room_type_id
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.Room'
+            type: array
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: List rooms
+      tags:
+      - Inventory
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Create room
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/handler.CreateRoomRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/models.Room'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "422":
+          description: Unprocessable Entity
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Create room
+      tags:
+      - Inventory
+  /admin/rooms/{id}:
+    delete:
+      parameters:
+      - description: Room ID
+        in: path
+        name: id
+        required: true
+        type: string
+      responses:
+        "204":
+          description: No Content
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "422":
+          description: Unprocessable Entity
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Delete room
+      tags:
+      - Inventory
+    put:
+      consumes:
+      - application/json
+      parameters:
+      - description: Room ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Update room
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/handler.UpdateRoomRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Room'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "422":
+          description: Unprocessable Entity
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Update room
+      tags:
+      - Inventory
+  /admin/rooms/{room_id}/rates:
+    get:
+      parameters:
+      - description: Room ID
+        in: path
+        name: room_id
+        required: true
+        type: string
+      - description: Start date (YYYY-MM-DD)
+        in: query
+        name: start
+        type: string
+      - description: End date (YYYY-MM-DD)
+        in: query
+        name: end
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/handler.RoomRateDoc'
+            type: array
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get room rates
+      tags:
+      - Inventory
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Room ID
+        in: path
+        name: room_id
+        required: true
+        type: string
+      - description: Room rate payload
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/handler.RoomRateRequestDoc'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "422":
+          description: Unprocessable Entity
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Set room rates
+      tags:
+      - Inventory
+  /admin/users:
+    get:
+      parameters:
+      - description: Property ID
+        in: query
+        name: property_id
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.Admin'
+            type: array
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: List admin users
+      tags:
+      - Admin
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Create admin
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/handler.CreateAdminRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/models.Admin'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "422":
+          description: Unprocessable Entity
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Create admin user
+      tags:
+      - Admin
+  /admin/users/{id}:
+    put:
+      consumes:
+      - application/json
+      parameters:
+      - description: Admin ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Update admin
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/handler.UpdateAdminRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "422":
+          description: Unprocessable Entity
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Update admin user
+      tags:
+      - Admin
+  /admin/users/{id}/activate:
+    post:
+      parameters:
+      - description: Admin ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "422":
+          description: Unprocessable Entity
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Activate admin user
+      tags:
+      - Admin
+  /admin/users/{id}/deactivate:
+    post:
+      parameters:
+      - description: Admin ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "422":
+          description: Unprocessable Entity
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Deactivate admin user
+      tags:
+      - Admin
+  /auth/admin/login:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Admin login
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/handler.AdminLoginRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.AdminLoginResponseDoc'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Login admin
+      tags:
+      - Auth
+  /auth/guest/login:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Login payload (email or phone)
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/handler.LoginRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.TokenResponseDoc'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Login guest
+      tags:
+      - Auth
+  /auth/guest/register:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Register guest
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/handler.RegisterGuestRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/models.Guest'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "422":
+          description: Unprocessable Entity
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Register guest
+      tags:
+      - Auth
+  /guests/bookings:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.Booking'
+            type: array
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get my bookings
+      tags:
+      - Guests
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Create booking
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/handler.CreateBookingRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/service.BookingCreateResult'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "422":
+          description: Unprocessable Entity
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Create booking
+      tags:
+      - Guests
+  /guests/bookings/{id}/cancel:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Booking ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.BookingCancelResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "422":
+          description: Unprocessable Entity
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Cancel booking
+      tags:
+      - Guests
+  /guests/bookings/{id}/invoice:
+    get:
+      parameters:
+      - description: Booking ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Invoice'
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get booking invoice
+      tags:
+      - Guests
+  /guests/bookings/{id}/pay:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Booking ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Payment payload
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/handler.PayBookingRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.PaymentInvoiceResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "422":
+          description: Unprocessable Entity
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Pay booking
+      tags:
+      - Guests
+  /guests/me:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Guest'
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get my profile
+      tags:
+      - Guests
+  /hotels:
+    get:
+      parameters:
+      - description: City name
+        in: query
+        name: city
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.Properties'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Search hotels by city
+      tags:
+      - Hotels
+  /hotels/{id}:
+    get:
+      parameters:
+      - description: Hotel ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.PropertyDetailResponse'
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get hotel detail
+      tags:
+      - Hotels
+  /rooms/{room_id}/availability:
+    get:
+      parameters:
+      - description: Room ID
+        in: path
+        name: room_id
+        required: true
+        type: string
+      - description: Check-in date (YYYY-MM-DD)
+        in: query
+        name: check_in
+        required: true
+        type: string
+      - description: Check-out date (YYYY-MM-DD)
+        in: query
+        name: check_out
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.AvailabilityResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "422":
+          description: Unprocessable Entity
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Check room availability
+      tags:
+      - Rooms
+securityDefinitions:
+  BearerAuth:
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"

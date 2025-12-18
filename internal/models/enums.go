@@ -61,3 +61,11 @@ const (
 	HousekeepingStatusOutOfOrder   HousekeepingStatus = "OutOfOrder"
 	HousekeepingStatusOutOfService HousekeepingStatus = "OutOfService"
 )
+
+type PaymentStatus string
+
+const (
+	PaymentStatusPending  PaymentStatus = "Pending"
+	PaymentStatusPaid     PaymentStatus = "Paid"
+	PaymentStatusRefunded PaymentStatus = "Refunded"
+)

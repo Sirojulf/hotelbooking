@@ -19,6 +19,7 @@ type CreateAdminInput struct {
 	Email      string `json:"email"`
 	Password   string `json:"password"`
 	PropertyID string `json:"property_id,omitempty"`
+	Role       string `json:"role,omitempty"`
 }
 
 // Response saat admin login
@@ -39,9 +40,13 @@ type AdminService interface {
 	CreateAdmin(input CreateAdminInput) (*models.Admin, error)
 	ActivateAdmin(adminID string) error
 	DeactivateAdmin(adminID string) error
+	UpdateRole(adminID, role string) error
+	UpdateProperty(adminID, propertyID string) error
+	ListAdmins(propertyID string) ([]models.Admin, error)
 
 	// QUERY
 	GetAdminByEmail(email string) (*models.Admin, error)
+	GetAdminByID(id string) (*models.Admin, error)
 	GetAdminForProperty(propertyID string) (*models.Admin, error)
 }
 
@@ -127,6 +132,7 @@ func (s *adminService) CreateAdmin(input CreateAdminInput) (*models.Admin, error
 	admin := models.Admin{
 		ID:         user.ID,    // id disamakan dengan auth.users
 		Email:      user.Email, // pakai email dari Supabase
+		Role:       input.Role,
 		IsActive:   true,
 		PropertyID: propertyUUID,
 	}
@@ -146,12 +152,34 @@ func (s *adminService) DeactivateAdmin(adminID string) error {
 	return s.repo.UpdateActiveStatus(adminID, false)
 }
 
+func (s *adminService) UpdateRole(adminID, role string) error {
+	if role == "" {
+		return fmt.Errorf("role is required")
+	}
+	return s.repo.UpdateRole(adminID, role)
+}
+
+func (s *adminService) UpdateProperty(adminID, propertyID string) error {
+	if propertyID == "" {
+		return fmt.Errorf("property_id is required")
+	}
+	return s.repo.UpdateProperty(adminID, propertyID)
+}
+
+func (s *adminService) ListAdmins(propertyID string) ([]models.Admin, error) {
+	return s.repo.ListAdmins(propertyID)
+}
+
 // ----------------------
 // QUERY
 // ----------------------
 
 func (s *adminService) GetAdminByEmail(email string) (*models.Admin, error) {
 	return s.repo.GetAdminByEmail(email)
+}
+
+func (s *adminService) GetAdminByID(id string) (*models.Admin, error) {
+	return s.repo.GetAdminByID(id)
 }
 
 func (s *adminService) GetAdminForProperty(propertyID string) (*models.Admin, error) {
