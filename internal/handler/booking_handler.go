@@ -1,7 +1,6 @@
 package handler
 
 import (
-	"hotelbooking/internal/models"
 	"hotelbooking/internal/service"
 	"net/http"
 	"time"
@@ -11,203 +10,163 @@ import (
 )
 
 type BookingHandler struct {
-	Svc service.BookingService
+	svc service.ReservationService
 }
 
-func NewBookingHandler(svc service.BookingService) *BookingHandler {
-	return &BookingHandler{Svc: svc}
+func NewBookingHandler(svc service.ReservationService) *BookingHandler {
+	return &BookingHandler{svc: svc}
 }
 
-type AvailabilityResponse struct {
-	Available    bool                  `json:"available"`
-	Nights       int                   `json:"nights"`
-	TotalPrice   float64               `json:"total_price"`
-	NightlyRates []service.NightlyRate `json:"nightly_rates"`
-	Currency     string                `json:"currency,omitempty"`
-}
-
-type PaymentInvoiceResponse struct {
-	Payment *models.Payment `json:"payment"`
-	Invoice *models.Invoice `json:"invoice"`
-}
-
-type BookingCancelResponse struct {
-	Booking *models.Booking `json:"booking"`
-	Payment *models.Payment `json:"payment"`
-}
-
-// GET /api/v1/rooms/:room_id/availability?check_in=YYYY-MM-DD&check_out=YYYY-MM-DD
-// @Summary Check room availability
+// @Summary Check room availability and get price quote
 // @Tags Rooms
 // @Produce json
 // @Param room_id path string true "Room ID"
 // @Param check_in query string true "Check-in date (YYYY-MM-DD)"
 // @Param check_out query string true "Check-out date (YYYY-MM-DD)"
-// @Success 200 {object} AvailabilityResponse
+// @Success 200 {object} service.ReservationQuote
 // @Failure 400 {object} map[string]string
-// @Failure 422 {object} map[string]string
 // @Router /rooms/{room_id}/availability [get]
 func (h *BookingHandler) CheckAvailability(c echo.Context) error {
 	roomID := c.Param("room_id")
 	checkInStr := c.QueryParam("check_in")
 	checkOutStr := c.QueryParam("check_out")
 	if roomID == "" || checkInStr == "" || checkOutStr == "" {
-		return c.JSON(http.StatusBadRequest, echo.Map{"error": "room_id, check_in, and check_out are required"})
+		return c.JSON(http.StatusBadRequest, echo.Map{"error": "room_id, check_in, check_out wajib diisi"})
 	}
 	checkIn, err := time.Parse("2006-01-02", checkInStr)
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, echo.Map{"error": "invalid check_in"})
+		return c.JSON(http.StatusBadRequest, echo.Map{"error": "format check_in tidak valid"})
 	}
 	checkOut, err := time.Parse("2006-01-02", checkOutStr)
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, echo.Map{"error": "invalid check_out"})
+		return c.JSON(http.StatusBadRequest, echo.Map{"error": "format check_out tidak valid"})
 	}
-
-	quote, err := h.Svc.QuoteBooking(roomID, checkIn, checkOut)
+	quote, err := h.svc.QuoteReservation(roomID, checkIn, checkOut)
 	if err != nil {
 		return c.JSON(http.StatusUnprocessableEntity, echo.Map{"error": err.Error()})
 	}
-
-	return c.JSON(http.StatusOK, AvailabilityResponse{
-		Available:    quote.Available,
-		Nights:       quote.Nights,
-		TotalPrice:   quote.TotalPrice,
-		NightlyRates: quote.NightlyRates,
-		Currency:     quote.Currency,
-	})
+	return c.JSON(http.StatusOK, quote)
 }
 
-type CreateBookingRequest struct {
-	PropertyID string `json:"property_id"`
-	RoomID     string `json:"room_id"`
-	CheckIn    string `json:"check_in"`
-	CheckOut   string `json:"check_out"`
+type CreateReservationRequest struct {
+	HotelID         string `json:"hotel_id"`
+	RoomID          string `json:"room_id"`
+	CheckIn         string `json:"check_in"`
+	CheckOut        string `json:"check_out"`
+	BookingSource   string `json:"booking_source"`
+	SpecialRequests string `json:"special_requests"`
+	PaymentMethod   string `json:"payment_method"`
 }
 
-// POST /api/v1/guests/bookings
-// @Summary Create booking
+// @Summary Create reservation
 // @Tags Guests
 // @Security BearerAuth
 // @Accept json
 // @Produce json
-// @Param payload body CreateBookingRequest true "Create booking"
-// @Success 201 {object} service.BookingCreateResult
+// @Param payload body CreateReservationRequest true "Create reservation"
+// @Success 201 {object} service.ReservationCreateResult
 // @Failure 400 {object} map[string]string
 // @Failure 401 {object} map[string]string
-// @Failure 422 {object} map[string]string
-// @Router /guests/bookings [post]
-func (h *BookingHandler) CreateBooking(c echo.Context) error {
+// @Router /guests/reservations [post]
+func (h *BookingHandler) CreateReservation(c echo.Context) error {
 	user, ok := c.Get("user").(*types.User)
 	if !ok || user == nil {
 		return c.JSON(http.StatusUnauthorized, echo.Map{"error": "Unauthorized"})
 	}
-
-	var req CreateBookingRequest
+	var req CreateReservationRequest
 	if err := c.Bind(&req); err != nil {
-		return c.JSON(http.StatusBadRequest, echo.Map{"error": "Invalid request body"})
+		return c.JSON(http.StatusBadRequest, echo.Map{"error": "request tidak valid"})
 	}
 	checkIn, err := time.Parse("2006-01-02", req.CheckIn)
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, echo.Map{"error": "invalid check_in"})
+		return c.JSON(http.StatusBadRequest, echo.Map{"error": "format check_in tidak valid"})
 	}
 	checkOut, err := time.Parse("2006-01-02", req.CheckOut)
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, echo.Map{"error": "invalid check_out"})
+		return c.JSON(http.StatusBadRequest, echo.Map{"error": "format check_out tidak valid"})
 	}
-
-	result, err := h.Svc.CreateBooking(user.ID.String(), req.PropertyID, req.RoomID, checkIn, checkOut)
+	result, err := h.svc.CreateReservation(service.CreateReservationInput{
+		GuestID:         user.ID.String(),
+		HotelID:         req.HotelID,
+		RoomID:          req.RoomID,
+		CheckIn:         checkIn,
+		CheckOut:        checkOut,
+		BookingSource:   req.BookingSource,
+		SpecialRequests: req.SpecialRequests,
+		PaymentMethod:   req.PaymentMethod,
+	})
 	if err != nil {
 		return c.JSON(http.StatusUnprocessableEntity, echo.Map{"error": err.Error()})
 	}
-
 	return c.JSON(http.StatusCreated, result)
 }
 
-type PayBookingRequest struct {
-	Provider  string `json:"provider"`
-	Reference string `json:"reference"`
+type PayReservationRequest struct {
+	PaymentMethod string `json:"payment_method"`
 }
 
-// POST /api/v1/guests/bookings/:id/pay
-// @Summary Pay booking
+// @Summary Pay reservation
 // @Tags Guests
 // @Security BearerAuth
 // @Accept json
 // @Produce json
-// @Param id path string true "Booking ID"
-// @Param payload body PayBookingRequest true "Payment payload"
-// @Success 200 {object} PaymentInvoiceResponse
-// @Failure 400 {object} map[string]string
+// @Param id path string true "Reservation ID"
+// @Param payload body PayReservationRequest true "Payment details"
+// @Success 200 {object} map[string]any
 // @Failure 401 {object} map[string]string
-// @Failure 422 {object} map[string]string
-// @Router /guests/bookings/{id}/pay [post]
-func (h *BookingHandler) PayBooking(c echo.Context) error {
+// @Router /guests/reservations/{id}/pay [post]
+func (h *BookingHandler) PayReservation(c echo.Context) error {
 	user, ok := c.Get("user").(*types.User)
 	if !ok || user == nil {
 		return c.JSON(http.StatusUnauthorized, echo.Map{"error": "Unauthorized"})
 	}
-	bookingID := c.Param("id")
-	var req PayBookingRequest
+	var req PayReservationRequest
 	if err := c.Bind(&req); err != nil {
-		return c.JSON(http.StatusBadRequest, echo.Map{"error": "Invalid request body"})
+		return c.JSON(http.StatusBadRequest, echo.Map{"error": "request tidak valid"})
 	}
-	payment, invoice, err := h.Svc.MarkPaymentPaid(user.ID.String(), bookingID, req.Provider, req.Reference)
+	res, tx, err := h.svc.MarkPaymentPaid(user.ID.String(), c.Param("id"), req.PaymentMethod)
 	if err != nil {
 		return c.JSON(http.StatusUnprocessableEntity, echo.Map{"error": err.Error()})
 	}
-	return c.JSON(http.StatusOK, echo.Map{
-		"payment": payment,
-		"invoice": invoice,
-	})
+	return c.JSON(http.StatusOK, echo.Map{"reservation": res, "transaction": tx})
 }
 
-// POST /api/v1/guests/bookings/:id/cancel
-// @Summary Cancel booking
+// @Summary Cancel reservation
 // @Tags Guests
 // @Security BearerAuth
-// @Accept json
 // @Produce json
-// @Param id path string true "Booking ID"
-// @Success 200 {object} BookingCancelResponse
+// @Param id path string true "Reservation ID"
+// @Success 200 {object} map[string]any
 // @Failure 401 {object} map[string]string
-// @Failure 422 {object} map[string]string
-// @Router /guests/bookings/{id}/cancel [post]
-func (h *BookingHandler) CancelBooking(c echo.Context) error {
+// @Router /guests/reservations/{id}/cancel [post]
+func (h *BookingHandler) CancelReservation(c echo.Context) error {
 	user, ok := c.Get("user").(*types.User)
 	if !ok || user == nil {
 		return c.JSON(http.StatusUnauthorized, echo.Map{"error": "Unauthorized"})
 	}
-	bookingID := c.Param("id")
-
-	booking, payment, err := h.Svc.CancelBooking(user.ID.String(), bookingID, time.Now())
+	res, tx, err := h.svc.CancelReservation(user.ID.String(), c.Param("id"))
 	if err != nil {
 		return c.JSON(http.StatusUnprocessableEntity, echo.Map{"error": err.Error()})
 	}
-	return c.JSON(http.StatusOK, echo.Map{
-		"booking": booking,
-		"payment": payment,
-	})
+	return c.JSON(http.StatusOK, echo.Map{"reservation": res, "transaction": tx})
 }
 
-// GET /api/v1/guests/bookings/:id/invoice
-// @Summary Get booking invoice
+// @Summary Get reservation transactions
 // @Tags Guests
 // @Security BearerAuth
 // @Produce json
-// @Param id path string true "Booking ID"
-// @Success 200 {object} models.Invoice
+// @Param id path string true "Reservation ID"
+// @Success 200 {array} models.Transaction
 // @Failure 401 {object} map[string]string
-// @Failure 404 {object} map[string]string
-// @Router /guests/bookings/{id}/invoice [get]
-func (h *BookingHandler) GetInvoice(c echo.Context) error {
+// @Router /guests/reservations/{id}/transactions [get]
+func (h *BookingHandler) GetTransactions(c echo.Context) error {
 	user, ok := c.Get("user").(*types.User)
 	if !ok || user == nil {
 		return c.JSON(http.StatusUnauthorized, echo.Map{"error": "Unauthorized"})
 	}
-	bookingID := c.Param("id")
-	invoice, err := h.Svc.GetInvoice(user.ID.String(), bookingID)
+	txs, err := h.svc.GetTransactions(user.ID.String(), c.Param("id"))
 	if err != nil {
 		return c.JSON(http.StatusNotFound, echo.Map{"error": err.Error()})
 	}
-	return c.JSON(http.StatusOK, invoice)
+	return c.JSON(http.StatusOK, txs)
 }

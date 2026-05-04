@@ -10,18 +10,18 @@ import (
 )
 
 type ReportHandler struct {
-	Svc service.ReportService
+	svc service.ReportService
 }
 
 func NewReportHandler(svc service.ReportService) *ReportHandler {
-	return &ReportHandler{Svc: svc}
+	return &ReportHandler{svc: svc}
 }
 
 // @Summary Get summary report
 // @Tags Reports
 // @Security BearerAuth
 // @Produce json
-// @Param property_id query string false "Property ID"
+// @Param hotel_id query string false "Hotel ID"
 // @Param start query string true "Start date (YYYY-MM-DD)"
 // @Param end query string true "End date (YYYY-MM-DD)"
 // @Success 200 {object} service.ReportSummary
@@ -30,13 +30,13 @@ func NewReportHandler(svc service.ReportService) *ReportHandler {
 // @Failure 500 {object} map[string]string
 // @Router /admin/reports/summary [get]
 func (h *ReportHandler) Summary(c echo.Context) error {
-	admin, ok := middleware.GetAdminFromContext(c)
+	profile, ok := middleware.GetProfileFromContext(c)
 	if !ok {
 		return c.JSON(http.StatusUnauthorized, echo.Map{"error": "Unauthorized"})
 	}
-	propertyID := c.QueryParam("property_id")
-	if admin.PropertyID != nil {
-		propertyID = admin.PropertyID.String()
+	hotelID := c.QueryParam("hotel_id")
+	if !middleware.IsSuperAdmin(profile) {
+		hotelID = profile.HotelID.String()
 	}
 	start := c.QueryParam("start")
 	end := c.QueryParam("end")
@@ -59,7 +59,7 @@ func (h *ReportHandler) Summary(c echo.Context) error {
 		}
 	}
 
-	summary, err := h.Svc.GetSummary(propertyID, startTime, endTime)
+	summary, err := h.svc.GetSummary(hotelID, startTime, endTime)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, echo.Map{"error": err.Error()})
 	}

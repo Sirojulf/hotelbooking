@@ -7,12 +7,18 @@ import (
 )
 
 type Room struct {
-	ID                 uuid.UUID          `json:"id" db:"id"`
-	PropertyID         *uuid.UUID         `json:"property_id,omitempty" db:"property_id"`
-	RoomNumber         string             `json:"room_number" db:"room_number"`
-	RoomTypeID         *uuid.UUID         `json:"room_type_id,omitempty" db:"room_type_id"`
-	RoomTypeDetail     *RoomType          `json:"room_type_detail,omitempty" db:"-"`
-	Status             RoomStatus         `json:"status" db:"status"`
-	HousekeepingStatus HousekeepingStatus `json:"housekeeping_status" db:"housekeeping_status"`
-	CreatedAt          time.Time          `json:"created_at" db:"created_at"`
+	ID                 uuid.UUID   `json:"id"`
+	HotelID            uuid.UUID   `json:"hotel_id"`
+	RoomTypeID         uuid.UUID   `json:"room_type_id"`
+	RoomNumber         string      `json:"room_number"`
+	Status             RoomStatus  `json:"status"`
+	CleaningStatus     CleanStatus `json:"cleaning_status,omitempty"`
+	FloorNumber        int         `json:"floor_number,omitempty"`
+	Wing               string      `json:"wing,omitempty"`
+	FurnitureCondition string      `json:"furniture_condition,omitempty"`
+	LastRenovationDate *time.Time  `json:"last_renovation_date,omitempty"`
+	SpecialNotes       string      `json:"special_notes,omitempty"`
+	RoomTypeDetail     *RoomType   `json:"room_type_detail,omitempty" db:"-"`
+	CreatedAt          time.Time   `json:"created_at"`
+	UpdatedAt          time.Time   `json:"updated_at"`
 }

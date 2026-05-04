@@ -12,7 +12,6 @@ import (
 )
 
 func SetupRoutes(e *echo.Echo) {
-	// Health check
 	e.GET("/", func(c echo.Context) error {
 		return c.String(http.StatusOK, "Hotel Booking API is running!")
 	})
@@ -23,107 +22,90 @@ func SetupRoutes(e *echo.Echo) {
 	// ======================
 	// REPOSITORIES
 	// ======================
+	profileRepo := repository.NewProfileRepo()
 	guestRepo := repository.NewGuestRepo()
-	adminRepo := repository.NewAdminRepo()
-	propertyRepo := repository.NewPropertyRepo()
-	bookingRepo := repository.NewBookingRepo()
-	paymentRepo := repository.NewPaymentRepo()
+	hotelRepo := repository.NewHotelRepo()
+	reservationRepo := repository.NewReservationRepo()
+	transactionRepo := repository.NewTransactionRepo()
 
 	// ======================
-	// SERVICES (DOMAIN BASED)
+	// SERVICES
 	// ======================
-	// Guest domain: auth + experience (search hotel, bookings, profile)
-	guestSvc := service.NewGuestService(guestRepo, propertyRepo, bookingRepo)
-
-	// Admin domain: login + (nanti) manajemen admin
-	adminSvc := service.NewAdminService(adminRepo)
-
-	// Inventory domain (admin kelola hotel/room/room-type)
-	inventorySvc := service.NewInventoryService(propertyRepo)
-	bookingSvc := service.NewBookingService(bookingRepo, propertyRepo, paymentRepo)
-	reportSvc := service.NewReportService(bookingRepo, propertyRepo)
+	profileSvc := service.NewProfileService(profileRepo)
+	guestSvc := service.NewGuestService(guestRepo, hotelRepo, reservationRepo)
+	inventorySvc := service.NewInventoryService(hotelRepo)
+	reservationSvc := service.NewReservationService(reservationRepo, hotelRepo, transactionRepo)
+	reportSvc := service.NewReportService(reservationRepo, hotelRepo)
+	aiSvc := service.NewAIService(hotelRepo)
 
 	// ======================
 	// HANDLERS
 	// ======================
+	adminHandler := handler.NewAdminHandler(profileSvc, reservationSvc)
 	guestHandler := handler.NewGuestHandler(guestSvc)
-	adminHandler := handler.NewAdminHandler(adminSvc, bookingSvc)
 	inventoryHandler := handler.NewInventoryHandler(inventorySvc)
+	bookingHandler := handler.NewBookingHandler(reservationSvc)
 	reportHandler := handler.NewReportHandler(reportSvc)
-	bookingHandler := handler.NewBookingHandler(bookingSvc)
+	aiHandler := handler.NewAIHandler(aiSvc)
 
 	// ======================
 	// PUBLIC ROUTES
 	// ======================
-
-	// Auth Guest
 	api.POST("/auth/guest/register", guestHandler.Register)
 	api.POST("/auth/guest/login", guestHandler.Login)
-
-	// Auth Admin
 	api.POST("/auth/admin/login", adminHandler.Login)
 
-	// Guest Experience (tanpa login: explore hotel)
-	api.GET("/hotels", guestHandler.SearchHotels)       // ?city=Jakarta
-	api.GET("/hotels/:id", guestHandler.GetHotelDetail) // detail 1 hotel
+	api.GET("/hotels", guestHandler.SearchHotels)
+	api.GET("/hotels/:id", guestHandler.GetHotelDetail)
 	api.GET("/rooms/:room_id/availability", bookingHandler.CheckAvailability)
 
-	// ======================
-	// PROTECTED ROUTES (BUTUH TOKEN)
-	// ======================
+	api.POST("/ai/recommend", aiHandler.RecommendRoom)
 
-	// Group khusus Guest (butuh AuthMiddleware)
+	// ======================
+	// GUEST PROTECTED ROUTES
+	// ======================
 	guestGroup := api.Group("/guests")
 	guestGroup.Use(middleware.AuthMiddleware)
-	guestGroup.GET("/bookings", guestHandler.GetMyBookings)
 	guestGroup.GET("/me", guestHandler.GetMyProfile)
-	guestGroup.POST("/bookings", bookingHandler.CreateBooking)
-	guestGroup.POST("/bookings/:id/pay", bookingHandler.PayBooking)
-	guestGroup.POST("/bookings/:id/cancel", bookingHandler.CancelBooking)
-	guestGroup.GET("/bookings/:id/invoice", bookingHandler.GetInvoice)
+	guestGroup.GET("/reservations", guestHandler.GetMyReservations)
+	guestGroup.POST("/reservations", bookingHandler.CreateReservation)
+	guestGroup.POST("/reservations/:id/pay", bookingHandler.PayReservation)
+	guestGroup.POST("/reservations/:id/cancel", bookingHandler.CancelReservation)
+	guestGroup.GET("/reservations/:id/transactions", bookingHandler.GetTransactions)
 
-	// Group khusus Admin (butuh AuthMiddleware)
+	// ======================
+	// ADMIN PROTECTED ROUTES
+	// ======================
 	adminGroup := api.Group("/admin")
 	adminGroup.Use(middleware.AuthMiddleware)
-	adminGroup.Use(middleware.AdminOnly(adminRepo))
+	adminGroup.Use(middleware.AdminOnly(profileRepo))
 
-	// Fitur admin untuk manage hotel & inventory
+	// Hotel management
 	adminGroup.POST("/hotels", inventoryHandler.CreateHotel)
 	adminGroup.GET("/hotels", inventoryHandler.ListHotels)
 	adminGroup.PUT("/hotels/:id", inventoryHandler.UpdateHotel)
 	adminGroup.DELETE("/hotels/:id", inventoryHandler.DeleteHotel)
 
+	// Room type management
 	adminGroup.POST("/room-types", inventoryHandler.CreateRoomType)
+	adminGroup.GET("/room-types", inventoryHandler.ListRoomTypes)
 	adminGroup.PUT("/room-types/:id", inventoryHandler.UpdateRoomType)
 	adminGroup.DELETE("/room-types/:id", inventoryHandler.DeleteRoomType)
-	adminGroup.GET("/room-types", inventoryHandler.ListRoomTypes)
 
+	// Room management
 	adminGroup.POST("/rooms", inventoryHandler.CreateRoom)
+	adminGroup.GET("/rooms", inventoryHandler.ListRooms)
 	adminGroup.PUT("/rooms/:id", inventoryHandler.UpdateRoom)
 	adminGroup.DELETE("/rooms/:id", inventoryHandler.DeleteRoom)
-	adminGroup.GET("/rooms", inventoryHandler.ListRooms)
 
-	adminGroup.POST("/rooms/:room_id/rates", inventoryHandler.SetRoomRates)
-	adminGroup.GET("/rooms/:room_id/rates", inventoryHandler.GetRoomRates)
+	// Staff management
+	adminGroup.POST("/users", adminHandler.CreateProfile)
+	adminGroup.GET("/users", adminHandler.ListProfiles)
+	adminGroup.PUT("/users/:id", adminHandler.UpdateProfile)
 
-	adminGroup.POST("/hotels/:property_id/photos", inventoryHandler.AddPropertyPhoto)
-	adminGroup.GET("/hotels/:property_id/photos", inventoryHandler.ListPropertyPhotos)
-	adminGroup.DELETE("/photos/property/:id", inventoryHandler.DeletePropertyPhoto)
-
-	adminGroup.POST("/room-photos", inventoryHandler.AddRoomPhoto) // property_id/room_type_id/room_id via query params
-	adminGroup.GET("/room-photos", inventoryHandler.ListRoomPhotos)
-	adminGroup.DELETE("/photos/room/:id", inventoryHandler.DeleteRoomPhoto)
-
-	// Admin user management
-	adminGroup.POST("/users", adminHandler.CreateAdmin)
-	adminGroup.GET("/users", adminHandler.ListAdmins)
-	adminGroup.PUT("/users/:id", adminHandler.UpdateAdmin)
-	adminGroup.POST("/users/:id/activate", adminHandler.Activate)
-	adminGroup.POST("/users/:id/deactivate", adminHandler.Deactivate)
-
-	// Booking oversight
-	adminGroup.GET("/bookings", adminHandler.ListBookings)
-	adminGroup.PUT("/bookings/:id/status", adminHandler.UpdateBookingStatus)
+	// Reservation management
+	adminGroup.GET("/reservations", adminHandler.ListReservations)
+	adminGroup.PUT("/reservations/:id", adminHandler.UpdateReservation)
 
 	// Reports
 	adminGroup.GET("/reports/summary", reportHandler.Summary)

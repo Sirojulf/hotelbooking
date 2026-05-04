@@ -12,34 +12,6 @@ type TokenResponseDoc struct {
 }
 
 type AdminLoginResponseDoc struct {
-	Admin   *models.Admin    `json:"admin"`
+	Profile *models.Profile  `json:"profile"`
 	Session TokenResponseDoc `json:"session"`
-}
-
-type RoomRateDoc struct {
-	ID               string          `json:"id"`
-	RoomID           string          `json:"room_id"`
-	Date             string          `json:"date"`
-	AvailableRooms   int             `json:"available_rooms"`
-	LinearRate       *float64        `json:"linear_rate"`
-	NonLinearRate    interface{}     `json:"non_linear_rate"`
-	MinNights        int             `json:"min_nights"`
-	MaxNights        int             `json:"max_nights"`
-	StopSell         bool            `json:"stop_sell"`
-	CloseOnArrival   bool            `json:"close_on_arrival"`
-	CloseOnDeparture bool            `json:"close_on_departure"`
-	CreatedAt        string          `json:"created_at"`
-}
-
-type RoomRateRequestDoc struct {
-	RoomID           string      `json:"room_id"`
-	Dates            []string    `json:"dates"`
-	AvailableRooms   int         `json:"available_rooms"`
-	LinearRate       *float64    `json:"linear_rate"`
-	NonLinearRate    interface{} `json:"non_linear_rate"`
-	MinNights        int         `json:"min_nights"`
-	MaxNights        int         `json:"max_nights"`
-	StopSell         bool        `json:"stop_sell"`
-	CloseOnArrival   bool        `json:"close_on_arrival"`
-	CloseOnDeparture bool        `json:"close_on_departure"`
 }

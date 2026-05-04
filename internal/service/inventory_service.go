@@ -1,6 +1,7 @@
 package service
 
 import (
+	"encoding/json"
 	"fmt"
 	"hotelbooking/internal/models"
 	"hotelbooking/internal/repository"
@@ -9,365 +10,273 @@ import (
 	"github.com/google/uuid"
 )
 
+type CreateHotelInput struct {
+	Name         string `json:"name"`
+	Address      string `json:"address"`
+	Code         string `json:"code"`
+	ImageURL     string `json:"image_url"`
+	CheckInTime  string `json:"check_in_time"`
+	CheckOutTime string `json:"check_out_time"`
+}
+
+type UpdateHotelInput struct {
+	Name         string `json:"name"`
+	Address      string `json:"address"`
+	Status       string `json:"status"`
+	Code         string `json:"code"`
+	ImageURL     string `json:"image_url"`
+	CheckInTime  string `json:"check_in_time"`
+	CheckOutTime string `json:"check_out_time"`
+}
+
+type CreateRoomTypeInput struct {
+	HotelID        string          `json:"hotel_id"`
+	Name           string          `json:"name"`
+	PricePerNight  float64         `json:"price_per_night"`
+	Capacity       int             `json:"capacity"`
+	Description    string          `json:"description"`
+	BedType        string          `json:"bed_type"`
+	BedCount       int             `json:"bed_count"`
+	ViewType       string          `json:"view_type"`
+	SizeSqm        float64         `json:"size_sqm"`
+	SmokingAllowed bool            `json:"smoking_allowed"`
+	Amenities      json.RawMessage `json:"amenities"`
+	Images         json.RawMessage `json:"images"`
+}
+
+type UpdateRoomTypeInput struct {
+	Name           string          `json:"name"`
+	PricePerNight  float64         `json:"price_per_night"`
+	Capacity       int             `json:"capacity"`
+	Description    string          `json:"description"`
+	BedType        string          `json:"bed_type"`
+	BedCount       int             `json:"bed_count"`
+	ViewType       string          `json:"view_type"`
+	SizeSqm        float64         `json:"size_sqm"`
+	SmokingAllowed bool            `json:"smoking_allowed"`
+	Amenities      json.RawMessage `json:"amenities"`
+	Images         json.RawMessage `json:"images"`
+}
+
+type CreateRoomInput struct {
+	HotelID    string `json:"hotel_id"`
+	RoomTypeID string `json:"room_type_id"`
+	RoomNumber string `json:"room_number"`
+	FloorNumber int   `json:"floor_number"`
+	Wing       string `json:"wing"`
+}
+
+type UpdateRoomInput struct {
+	RoomNumber         string             `json:"room_number"`
+	Status             models.RoomStatus  `json:"status"`
+	CleaningStatus     models.CleanStatus `json:"cleaning_status"`
+	FloorNumber        int                `json:"floor_number"`
+	Wing               string             `json:"wing"`
+	FurnitureCondition string             `json:"furniture_condition"`
+	SpecialNotes       string             `json:"special_notes"`
+}
+
 type InventoryService interface {
-	CreateHotel(name, address, city, hotelCode string) (*models.Properties, error)
-	UpdateHotel(id, name, address, city string, facilities []string, checkIn, checkOut, cancelPolicy string) (*models.Properties, error)
+	CreateHotel(input CreateHotelInput) (*models.Hotel, error)
+	UpdateHotel(id string, input UpdateHotelInput) (*models.Hotel, error)
 	DeleteHotel(id string) error
-	ListHotels(city string) ([]models.Properties, error)
-	GetHotelByID(id string) (*models.Properties, error)
-	CreateRoomType(propertyID, name, description string, price float64, capacity int, facilities []string) (*models.RoomType, error)
-	UpdateRoomType(id, propertyID, name, description string, price float64, capacity int, facilities []string) (*models.RoomType, error)
+	ListHotels(search string) ([]models.Hotel, error)
+	GetHotelByID(id string) (*models.Hotel, error)
+
+	CreateRoomType(input CreateRoomTypeInput) (*models.RoomType, error)
+	UpdateRoomType(id string, input UpdateRoomTypeInput) (*models.RoomType, error)
 	DeleteRoomType(id string) error
-	ListRoomTypes(propertyID string) ([]models.RoomType, error)
-	CreateRoom(propertyID, roomTypeID, roomNumber string) (*models.Room, error)
-	UpdateRoom(id, propertyID, roomTypeID, roomNumber string, status models.RoomStatus, hkStatus models.HousekeepingStatus) (*models.Room, error)
-	DeleteRoom(id string) error
-	ListRooms(propertyID, roomTypeID string) ([]models.Room, error)
-	SetRoomRates(rates []models.RoomRate) error
-	GetRoomRates(roomID, startDate, endDate string) ([]models.RoomRate, error)
-	GetRoomByID(id string) (*models.Room, error)
+	ListRoomTypes(hotelID string) ([]models.RoomType, error)
 	GetRoomTypeByID(id string) (*models.RoomType, error)
-	GetPropertyPhotoByID(id string) (*models.PropertyPhoto, error)
-	GetRoomPhotoByID(id string) (*models.RoomPhoto, error)
-	AddPropertyPhoto(propertyID, url, caption string) error
-	ListPropertyPhotos(propertyID string) ([]models.PropertyPhoto, error)
-	DeletePropertyPhoto(id string) error
-	AddRoomPhoto(propertyID, roomTypeID, roomID, url, caption string) error
-	ListRoomPhotos(roomTypeID, roomID string) ([]models.RoomPhoto, error)
-	DeleteRoomPhoto(id string) error
+
+	CreateRoom(input CreateRoomInput) (*models.Room, error)
+	UpdateRoom(id string, input UpdateRoomInput) (*models.Room, error)
+	DeleteRoom(id string) error
+	ListRooms(hotelID, roomTypeID string) ([]models.Room, error)
+	GetRoomByID(id string) (*models.Room, error)
 }
 
 type inventoryService struct {
-	repo repository.PropertyRepo
+	repo repository.HotelRepo
 }
 
-func NewInventoryService(repo repository.PropertyRepo) InventoryService {
+func NewInventoryService(repo repository.HotelRepo) InventoryService {
 	return &inventoryService{repo: repo}
 }
 
-func (s *inventoryService) CreateHotel(name, address, city, hotelCode string) (*models.Properties, error) {
-	// 1. Validasi Input Sederhana
-	if name == "" || hotelCode == "" {
-		return nil, fmt.Errorf("nama hotel dan kode hotel wajib diisi")
+func (s *inventoryService) CreateHotel(input CreateHotelInput) (*models.Hotel, error) {
+	if input.Name == "" {
+		return nil, fmt.Errorf("nama hotel wajib diisi")
 	}
-
-	// 2. Siapkan Model Data
-	newProperty := models.Properties{
-		ID:        uuid.New(),
-		HotelCode: hotelCode,
-		// AuthCode bisa digenerate otomatis atau dikosongkan dulu tergantung logic Anda
-		AuthCode:  uuid.New().String()[:8],
-		Name:      name,
-		Address:   address,
-		City:      city,
-		CreatedAt: time.Now(),
+	hotel := models.Hotel{
+		ID:           uuid.New(),
+		Name:         input.Name,
+		Address:      input.Address,
+		Status:       string(models.HotelStatusActive),
+		Code:         input.Code,
+		ImageURL:     input.ImageURL,
+		CheckInTime:  input.CheckInTime,
+		CheckOutTime: input.CheckOutTime,
+		CreatedAt:    time.Now(),
 	}
-
-	// 3. Panggil Repository
-	err := s.repo.CreateProperty(newProperty)
-	if err != nil {
+	if err := s.repo.CreateHotel(hotel); err != nil {
 		return nil, err
 	}
-
-	return &newProperty, nil
+	return &hotel, nil
 }
 
-func (s *inventoryService) CreateRoomType(propertyID, name, description string, price float64, capacity int, facilities []string) (*models.RoomType, error) {
-	if name == "" {
+func (s *inventoryService) UpdateHotel(id string, input UpdateHotelInput) (*models.Hotel, error) {
+	if input.Name == "" {
+		return nil, fmt.Errorf("nama hotel wajib diisi")
+	}
+	hotelID, err := uuid.Parse(id)
+	if err != nil {
+		return nil, fmt.Errorf("hotel_id tidak valid")
+	}
+	status := input.Status
+	if status == "" {
+		status = string(models.HotelStatusActive)
+	}
+	return s.repo.UpdateHotel(models.Hotel{
+		ID:           hotelID,
+		Name:         input.Name,
+		Address:      input.Address,
+		Status:       status,
+		Code:         input.Code,
+		ImageURL:     input.ImageURL,
+		CheckInTime:  input.CheckInTime,
+		CheckOutTime: input.CheckOutTime,
+	})
+}
+
+func (s *inventoryService) DeleteHotel(id string) error        { return s.repo.DeleteHotel(id) }
+func (s *inventoryService) ListHotels(search string) ([]models.Hotel, error) {
+	return s.repo.ListHotels(search)
+}
+func (s *inventoryService) GetHotelByID(id string) (*models.Hotel, error) {
+	return s.repo.GetHotelByID(id)
+}
+
+func (s *inventoryService) CreateRoomType(input CreateRoomTypeInput) (*models.RoomType, error) {
+	if input.Name == "" {
 		return nil, fmt.Errorf("nama tipe kamar wajib diisi")
 	}
-
-	if price <= 0 {
-		return nil, fmt.Errorf("harga harus lebih dari 0")
+	if input.PricePerNight <= 0 {
+		return nil, fmt.Errorf("harga per malam harus lebih dari 0")
 	}
-
-	if capacity <= 0 {
-		return nil, fmt.Errorf("kapasitas minimal 1 orang")
+	if input.Capacity <= 0 {
+		return nil, fmt.Errorf("kapasitas minimal 1")
 	}
-
-	propUUID, err := uuid.Parse(propertyID)
+	hotelUUID, err := uuid.Parse(input.HotelID)
 	if err != nil {
-		return nil, fmt.Errorf("property_id tidak valid")
+		return nil, fmt.Errorf("hotel_id tidak valid")
 	}
-
-	newRoomType := models.RoomType{
-		ID:          uuid.New(),
-		PropertyID:  &propUUID,
-		Name:        name,
-		Description: description,
-		BasePrice:   price,
-		Capacity:    capacity,
-		Facilities:  facilities,
-		CreatedAt:   time.Now(),
+	rt := models.RoomType{
+		ID:             uuid.New(),
+		HotelID:        hotelUUID,
+		Name:           input.Name,
+		PricePerNight:  input.PricePerNight,
+		Capacity:       input.Capacity,
+		Description:    input.Description,
+		BedType:        input.BedType,
+		BedCount:       input.BedCount,
+		ViewType:       input.ViewType,
+		SizeSqm:        input.SizeSqm,
+		SmokingAllowed: input.SmokingAllowed,
+		Amenities:      input.Amenities,
+		Images:         input.Images,
+		CreatedAt:      time.Now(),
+		UpdatedAt:      time.Now(),
 	}
-
-	if err := s.repo.CreateRoomType(newRoomType); err != nil {
+	if err := s.repo.CreateRoomType(rt); err != nil {
 		return nil, err
 	}
-
-	return &newRoomType, nil
+	return &rt, nil
 }
 
-func (s *inventoryService) UpdateRoomType(id, propertyID, name, description string, price float64, capacity int, facilities []string) (*models.RoomType, error) {
-	if name == "" {
+func (s *inventoryService) UpdateRoomType(id string, input UpdateRoomTypeInput) (*models.RoomType, error) {
+	if input.Name == "" {
 		return nil, fmt.Errorf("nama tipe kamar wajib diisi")
 	}
-	if price <= 0 {
-		return nil, fmt.Errorf("harga harus lebih dari 0")
-	}
-	if capacity <= 0 {
-		return nil, fmt.Errorf("kapasitas minimal 1 orang")
-	}
-	roomTypeID, err := uuid.Parse(id)
+	rtID, err := uuid.Parse(id)
 	if err != nil {
-		return nil, fmt.Errorf("invalid room type id")
-	}
-	var propUUID *uuid.UUID
-	if propertyID != "" {
-		pid, err := uuid.Parse(propertyID)
-		if err != nil {
-			return nil, fmt.Errorf("property_id tidak valid")
-		}
-		propUUID = &pid
+		return nil, fmt.Errorf("room_type_id tidak valid")
 	}
 	return s.repo.UpdateRoomType(models.RoomType{
-		ID:          roomTypeID,
-		PropertyID:  propUUID,
-		Name:        name,
-		Description: description,
-		BasePrice:   price,
-		Capacity:    capacity,
-		Facilities:  facilities,
+		ID:             rtID,
+		Name:           input.Name,
+		PricePerNight:  input.PricePerNight,
+		Capacity:       input.Capacity,
+		Description:    input.Description,
+		BedType:        input.BedType,
+		BedCount:       input.BedCount,
+		ViewType:       input.ViewType,
+		SizeSqm:        input.SizeSqm,
+		SmokingAllowed: input.SmokingAllowed,
+		Amenities:      input.Amenities,
+		Images:         input.Images,
 	})
 }
 
-func (s *inventoryService) DeleteRoomType(id string) error {
-	return s.repo.DeleteRoomType(id)
+func (s *inventoryService) DeleteRoomType(id string) error { return s.repo.DeleteRoomType(id) }
+func (s *inventoryService) ListRoomTypes(hotelID string) ([]models.RoomType, error) {
+	return s.repo.ListRoomTypes(hotelID)
 }
-
-func (s *inventoryService) ListRoomTypes(propertyID string) ([]models.RoomType, error) {
-	return s.repo.ListRoomTypes(propertyID)
-}
-
-func (s *inventoryService) CreateRoom(propertyID, roomTypeID, roomNumber string) (*models.Room, error) {
-	if roomNumber == "" {
-		return nil, fmt.Errorf("nomor kamar wajib diisi")
-	}
-
-	propUUID, err := uuid.Parse(propertyID)
-	if err != nil {
-		return nil, fmt.Errorf("invalid property id")
-	}
-	typeUUID, err := uuid.Parse(roomTypeID)
-	if err != nil {
-		return nil, fmt.Errorf("invalid room id")
-	}
-
-	newRoom := models.Room{
-		ID:                 uuid.New(),
-		PropertyID:         &propUUID,
-		RoomTypeID:         &typeUUID,
-		RoomNumber:         roomNumber,
-		RoomTypeDetail:     &models.RoomType{},
-		Status:             models.RoomStatusAvailable,
-		HousekeepingStatus: models.HousekeepingStatusClean,
-		CreatedAt:          time.Now(),
-	}
-
-	if err := s.repo.CreateRoom(newRoom); err != nil {
-		return nil, err
-	}
-
-	return &newRoom, nil
-}
-
-func (s *inventoryService) UpdateRoom(id, propertyID, roomTypeID, roomNumber string, status models.RoomStatus, hkStatus models.HousekeepingStatus) (*models.Room, error) {
-	roomUUID, err := uuid.Parse(id)
-	if err != nil {
-		return nil, fmt.Errorf("invalid room id")
-	}
-	var propUUID *uuid.UUID
-	if propertyID != "" {
-		pid, err := uuid.Parse(propertyID)
-		if err != nil {
-			return nil, fmt.Errorf("invalid property id")
-		}
-		propUUID = &pid
-	}
-	var typeUUID *uuid.UUID
-	if roomTypeID != "" {
-		tid, err := uuid.Parse(roomTypeID)
-		if err != nil {
-			return nil, fmt.Errorf("invalid room type id")
-		}
-		typeUUID = &tid
-	}
-	return s.repo.UpdateRoom(models.Room{
-		ID:                 roomUUID,
-		PropertyID:         propUUID,
-		RoomTypeID:         typeUUID,
-		RoomNumber:         roomNumber,
-		Status:             status,
-		HousekeepingStatus: hkStatus,
-	})
-}
-
-func (s *inventoryService) DeleteRoom(id string) error {
-	return s.repo.DeleteRoom(id)
-}
-
-func (s *inventoryService) ListRooms(propertyID, roomTypeID string) ([]models.Room, error) {
-	return s.repo.ListRooms(propertyID, roomTypeID)
-}
-
-func (s *inventoryService) SetRoomRates(rates []models.RoomRate) error {
-	if len(rates) == 0 {
-		return fmt.Errorf("rates tidak boleh kosong")
-	}
-	return s.repo.UpsertRoomRates(rates)
-}
-
-func (s *inventoryService) GetRoomRates(roomID, startDate, endDate string) ([]models.RoomRate, error) {
-	if roomID == "" {
-		return nil, fmt.Errorf("room_id wajib diisi")
-	}
-	return s.repo.ListRoomRates(roomID, startDate, endDate)
-}
-
-func (s *inventoryService) GetRoomByID(id string) (*models.Room, error) {
-	if id == "" {
-		return nil, fmt.Errorf("room_id wajib diisi")
-	}
-	return s.repo.GetRoomByID(id)
-}
-
 func (s *inventoryService) GetRoomTypeByID(id string) (*models.RoomType, error) {
-	if id == "" {
-		return nil, fmt.Errorf("room_type_id wajib diisi")
-	}
 	return s.repo.GetRoomTypeByID(id)
 }
 
-func (s *inventoryService) GetPropertyPhotoByID(id string) (*models.PropertyPhoto, error) {
-	if id == "" {
-		return nil, fmt.Errorf("property_photo_id wajib diisi")
+func (s *inventoryService) CreateRoom(input CreateRoomInput) (*models.Room, error) {
+	if input.RoomNumber == "" {
+		return nil, fmt.Errorf("nomor kamar wajib diisi")
 	}
-	return s.repo.GetPropertyPhotoByID(id)
-}
-
-func (s *inventoryService) GetRoomPhotoByID(id string) (*models.RoomPhoto, error) {
-	if id == "" {
-		return nil, fmt.Errorf("room_photo_id wajib diisi")
-	}
-	return s.repo.GetRoomPhotoByID(id)
-}
-
-func (s *inventoryService) AddPropertyPhoto(propertyID, url, caption string) error {
-	if url == "" {
-		return fmt.Errorf("url foto wajib diisi")
-	}
-	pid, err := uuid.Parse(propertyID)
+	hotelUUID, err := uuid.Parse(input.HotelID)
 	if err != nil {
-		return fmt.Errorf("invalid property id")
+		return nil, fmt.Errorf("hotel_id tidak valid")
 	}
-	return s.repo.AddPropertyPhoto(models.PropertyPhoto{
-		ID:         uuid.New(),
-		PropertyID: &pid,
-		URL:        url,
-		Caption:    caption,
-		CreatedAt:  time.Now(),
-	})
-}
-
-func (s *inventoryService) ListPropertyPhotos(propertyID string) ([]models.PropertyPhoto, error) {
-	if propertyID == "" {
-		return nil, fmt.Errorf("property_id wajib diisi")
-	}
-	return s.repo.ListPropertyPhotos(propertyID)
-}
-
-func (s *inventoryService) DeletePropertyPhoto(id string) error {
-	return s.repo.DeletePropertyPhoto(id)
-}
-
-func (s *inventoryService) AddRoomPhoto(propertyID, roomTypeID, roomID, url, caption string) error {
-	if url == "" {
-		return fmt.Errorf("url foto wajib diisi")
-	}
-	var pid *uuid.UUID
-	if propertyID != "" {
-		parsed, err := uuid.Parse(propertyID)
-		if err != nil {
-			return fmt.Errorf("invalid property id")
-		}
-		pid = &parsed
-	}
-	var rtID *uuid.UUID
-	if roomTypeID != "" {
-		parsed, err := uuid.Parse(roomTypeID)
-		if err != nil {
-			return fmt.Errorf("invalid room_type_id")
-		}
-		rtID = &parsed
-	}
-	var rID *uuid.UUID
-	if roomID != "" {
-		parsed, err := uuid.Parse(roomID)
-		if err != nil {
-			return fmt.Errorf("invalid room_id")
-		}
-		rID = &parsed
-	}
-	return s.repo.AddRoomPhoto(models.RoomPhoto{
-		ID:         uuid.New(),
-		PropertyID: pid,
-		RoomTypeID: rtID,
-		RoomID:     rID,
-		URL:        url,
-		Caption:    caption,
-		CreatedAt:  time.Now(),
-	})
-}
-
-func (s *inventoryService) ListRoomPhotos(roomTypeID, roomID string) ([]models.RoomPhoto, error) {
-	return s.repo.ListRoomPhotos(roomTypeID, roomID)
-}
-
-func (s *inventoryService) DeleteRoomPhoto(id string) error {
-	return s.repo.DeleteRoomPhoto(id)
-}
-
-func (s *inventoryService) UpdateHotel(id, name, address, city string, facilities []string, checkIn, checkOut, cancelPolicy string) (*models.Properties, error) {
-	if name == "" {
-		return nil, fmt.Errorf("nama hotel wajib diisi")
-	}
-	propID, err := uuid.Parse(id)
+	typeUUID, err := uuid.Parse(input.RoomTypeID)
 	if err != nil {
-		return nil, fmt.Errorf("invalid property id")
+		return nil, fmt.Errorf("room_type_id tidak valid")
 	}
-	return s.repo.UpdateProperty(models.Properties{
-		ID:                  propID,
-		Name:                name,
-		Address:             address,
-		City:                city,
-		Facilities:          facilities,
-		CheckInTime:         checkIn,
-		CheckOutTime:        checkOut,
-		CancellationPolicy:  cancelPolicy,
+	room := models.Room{
+		ID:             uuid.New(),
+		HotelID:        hotelUUID,
+		RoomTypeID:     typeUUID,
+		RoomNumber:     input.RoomNumber,
+		Status:         models.RoomStatusAvailable,
+		CleaningStatus: models.CleanStatusClean,
+		FloorNumber:    input.FloorNumber,
+		Wing:           input.Wing,
+		CreatedAt:      time.Now(),
+		UpdatedAt:      time.Now(),
+	}
+	if err := s.repo.CreateRoom(room); err != nil {
+		return nil, err
+	}
+	return &room, nil
+}
+
+func (s *inventoryService) UpdateRoom(id string, input UpdateRoomInput) (*models.Room, error) {
+	roomID, err := uuid.Parse(id)
+	if err != nil {
+		return nil, fmt.Errorf("room_id tidak valid")
+	}
+	return s.repo.UpdateRoom(models.Room{
+		ID:                 roomID,
+		RoomNumber:         input.RoomNumber,
+		Status:             input.Status,
+		CleaningStatus:     input.CleaningStatus,
+		FloorNumber:        input.FloorNumber,
+		Wing:               input.Wing,
+		FurnitureCondition: input.FurnitureCondition,
+		SpecialNotes:       input.SpecialNotes,
 	})
 }
 
-func (s *inventoryService) DeleteHotel(id string) error {
-	return s.repo.DeleteProperty(id)
+func (s *inventoryService) DeleteRoom(id string) error { return s.repo.DeleteRoom(id) }
+func (s *inventoryService) ListRooms(hotelID, roomTypeID string) ([]models.Room, error) {
+	return s.repo.ListRooms(hotelID, roomTypeID)
 }
-
-func (s *inventoryService) ListHotels(city string) ([]models.Properties, error) {
-	return s.repo.ListProperties(city)
-}
-
-func (s *inventoryService) GetHotelByID(id string) (*models.Properties, error) {
-	if id == "" {
-		return nil, fmt.Errorf("property_id wajib diisi")
-	}
-	return s.repo.GetPropertyByID(id)
+func (s *inventoryService) GetRoomByID(id string) (*models.Room, error) {
+	return s.repo.GetRoomByID(id)
 }

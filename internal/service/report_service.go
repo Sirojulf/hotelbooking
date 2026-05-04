@@ -8,51 +8,47 @@ import (
 )
 
 type ReportSummary struct {
-	TotalBookings int     `json:"total_bookings"`
-	Revenue       float64 `json:"revenue"`
-	Occupancy     float64 `json:"occupancy"`
-	ADR           float64 `json:"adr"`
-	RevPAR        float64 `json:"revpar"`
-	OccupancyByDate map[string]float64 `json:"occupancy_by_date"`
+	TotalReservations int                `json:"total_reservations"`
+	Revenue           float64            `json:"revenue"`
+	Occupancy         float64            `json:"occupancy"`
+	ADR               float64            `json:"adr"`
+	RevPAR            float64            `json:"revpar"`
+	OccupancyByDate   map[string]float64 `json:"occupancy_by_date"`
 }
 
 type ReportService interface {
-	GetSummary(propertyID string, start, end time.Time) (*ReportSummary, error)
+	GetSummary(hotelID string, start, end time.Time) (*ReportSummary, error)
 }
 
 type reportService struct {
-	bookingRepo repository.BookingRepo
-	propRepo    repository.PropertyRepo
+	resRepo   repository.ReservationRepo
+	hotelRepo repository.HotelRepo
 }
 
-func NewReportService(bookingRepo repository.BookingRepo, propRepo repository.PropertyRepo) ReportService {
+func NewReportService(resRepo repository.ReservationRepo, hotelRepo repository.HotelRepo) ReportService {
 	return &reportService{
-		bookingRepo: bookingRepo,
-		propRepo:    propRepo,
+		resRepo:   resRepo,
+		hotelRepo: hotelRepo,
 	}
 }
 
-func (s *reportService) GetSummary(propertyID string, start, end time.Time) (*ReportSummary, error) {
+func (s *reportService) GetSummary(hotelID string, start, end time.Time) (*ReportSummary, error) {
 	if start.IsZero() || end.IsZero() {
 		return nil, fmt.Errorf("start dan end wajib diisi")
 	}
 	if end.Before(start) {
 		return nil, fmt.Errorf("end tidak boleh sebelum start")
 	}
-	var startStr, endStr string
-	if !start.IsZero() {
-		startStr = start.Format("2006-01-02")
-	}
-	if !end.IsZero() {
-		endStr = end.Format("2006-01-02")
-	}
 
-	bookings, err := s.bookingRepo.ListBookings(propertyID, "", startStr, endStr)
+	startStr := start.Format("2006-01-02")
+	endStr := end.AddDate(0, 0, 1).Format("2006-01-02")
+
+	reservations, err := s.resRepo.ListReservations(hotelID, "", startStr, endStr)
 	if err != nil {
 		return nil, err
 	}
 
-	rooms, err := s.propRepo.ListRooms(propertyID, "")
+	rooms, err := s.hotelRepo.ListRooms(hotelID, "")
 	if err != nil {
 		return nil, err
 	}
@@ -66,33 +62,39 @@ func (s *reportService) GetSummary(propertyID string, start, end time.Time) (*Re
 		roomCount = 1
 	}
 
-	var totalNights int
-	var revenue float64
 	occupancyByDate := make(map[string]float64)
 	for day := start; !day.After(end); day = day.AddDate(0, 0, 1) {
 		occupancyByDate[day.Format("2006-01-02")] = 0
 	}
 
-	for _, b := range bookings {
-		if b.Status == models.BookingStatusCancel || b.Status == models.BookingStatusNew {
+	var totalNights int
+	var totalReservations int
+	var revenue float64
+
+	for _, r := range reservations {
+		if r.PaymentStatus == models.PaymentStatusCancelled || r.PaymentStatus == models.PaymentStatusPending {
 			continue
 		}
-		totalNights += b.Nights
-		revenue += b.TotalPrice - b.RefundAmount
-		for day := b.CheckIn; day.Before(b.CheckOut); day = day.AddDate(0, 0, 1) {
+		nights := int(r.CheckOutDate.Sub(r.CheckInDate).Hours() / 24)
+		totalReservations++
+		totalNights += nights
+		revenue += r.TotalPrice
+
+		for day := r.CheckInDate; day.Before(r.CheckOutDate); day = day.AddDate(0, 0, 1) {
 			key := day.Format("2006-01-02")
 			if _, ok := occupancyByDate[key]; ok {
-				occupancyByDate[key] += 1
+				occupancyByDate[key]++
 			}
 		}
+	}
+
+	for k, v := range occupancyByDate {
+		occupancyByDate[k] = v / float64(roomCount)
 	}
 
 	occupancy := float64(totalNights) / float64(roomCount*days)
 	if occupancy < 0 {
 		occupancy = 0
-	}
-	for k, v := range occupancyByDate {
-		occupancyByDate[k] = v / float64(roomCount)
 	}
 
 	adr := 0.0
@@ -102,11 +104,11 @@ func (s *reportService) GetSummary(propertyID string, start, end time.Time) (*Re
 	revpar := revenue / float64(roomCount*days)
 
 	return &ReportSummary{
-		TotalBookings: len(bookings),
-		Revenue:       revenue,
-		Occupancy:     occupancy,
-		ADR:           adr,
-		RevPAR:        revpar,
-		OccupancyByDate: occupancyByDate,
+		TotalReservations: totalReservations,
+		Revenue:           revenue,
+		Occupancy:         occupancy,
+		ADR:               adr,
+		RevPAR:            revpar,
+		OccupancyByDate:   occupancyByDate,
 	}, nil
 }
