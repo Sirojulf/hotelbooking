@@ -15,167 +15,6 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/admin/bookings": {
-            "get": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Bookings"
-                ],
-                "summary": "List bookings",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Property ID",
-                        "name": "property_id",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "description": "Booking status",
-                        "name": "status",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "description": "Start date (YYYY-MM-DD)",
-                        "name": "start",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "description": "End date (YYYY-MM-DD)",
-                        "name": "end",
-                        "in": "query"
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/models.Booking"
-                            }
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "/admin/bookings/{id}/status": {
-            "put": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Bookings"
-                ],
-                "summary": "Update booking status",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Booking ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "Update booking status",
-                        "name": "payload",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/handler.UpdateBookingStatusRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/models.Booking"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "403": {
-                        "description": "Forbidden",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "422": {
-                        "description": "Unprocessable Entity",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    }
-                }
-            }
-        },
         "/admin/hotels": {
             "get": {
                 "security": [
@@ -193,8 +32,8 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "City filter",
-                        "name": "city",
+                        "description": "Search query",
+                        "name": "q",
                         "in": "query"
                     }
                 ],
@@ -204,25 +43,7 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/models.Properties"
-                            }
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
+                                "$ref": "#/definitions/models.Hotel"
                             }
                         }
                     }
@@ -251,7 +72,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/handler.CreateHotelRequest"
+                            "$ref": "#/definitions/service.CreateHotelInput"
                         }
                     }
                 ],
@@ -259,43 +80,7 @@ const docTemplate = `{
                     "201": {
                         "description": "Created",
                         "schema": {
-                            "$ref": "#/definitions/models.Properties"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "403": {
-                        "description": "Forbidden",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
+                            "$ref": "#/definitions/models.Hotel"
                         }
                     }
                 }
@@ -307,12 +92,6 @@ const docTemplate = `{
                     {
                         "BearerAuth": []
                     }
-                ],
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
                 ],
                 "tags": [
                     "Inventory"
@@ -332,7 +111,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/handler.UpdateHotelRequest"
+                            "$ref": "#/definitions/service.UpdateHotelInput"
                         }
                     }
                 ],
@@ -340,43 +119,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/models.Properties"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "403": {
-                        "description": "Forbidden",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "422": {
-                        "description": "Unprocessable Entity",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
+                            "$ref": "#/definitions/models.Hotel"
                         }
                     }
                 }
@@ -402,305 +145,7 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "204": {
-                        "description": "No Content",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "403": {
-                        "description": "Forbidden",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "422": {
-                        "description": "Unprocessable Entity",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "/admin/hotels/{property_id}/photos": {
-            "get": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Inventory"
-                ],
-                "summary": "List property photos",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Property ID",
-                        "name": "property_id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/models.PropertyPhoto"
-                            }
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "403": {
-                        "description": "Forbidden",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    }
-                }
-            },
-            "post": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Inventory"
-                ],
-                "summary": "Add property photo",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Property ID",
-                        "name": "property_id",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "Photo payload",
-                        "name": "payload",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/handler.PhotoRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "201": {
-                        "description": "Created",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "403": {
-                        "description": "Forbidden",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "422": {
-                        "description": "Unprocessable Entity",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "/admin/photos/property/{id}": {
-            "delete": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "tags": [
-                    "Inventory"
-                ],
-                "summary": "Delete property photo",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Photo ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "204": {
-                        "description": "No Content",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "403": {
-                        "description": "Forbidden",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "422": {
-                        "description": "Unprocessable Entity",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "/admin/photos/room/{id}": {
-            "delete": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "tags": [
-                    "Inventory"
-                ],
-                "summary": "Delete room photo",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Photo ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "204": {
-                        "description": "No Content",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "403": {
-                        "description": "Forbidden",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "422": {
-                        "description": "Unprocessable Entity",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
+                        "description": "No Content"
                     }
                 }
             }
@@ -722,8 +167,8 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "Property ID",
-                        "name": "property_id",
+                        "description": "Hotel ID",
+                        "name": "hotel_id",
                         "in": "query"
                     },
                     {
@@ -778,7 +223,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/admin/room-photos": {
+        "/admin/reservations": {
             "get": {
                 "security": [
                     {
@@ -789,20 +234,32 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Inventory"
+                    "Reservations"
                 ],
-                "summary": "List room photos",
+                "summary": "List reservations (admin)",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "Room type ID",
-                        "name": "room_type_id",
+                        "description": "Hotel ID",
+                        "name": "hotel_id",
                         "in": "query"
                     },
                     {
                         "type": "string",
-                        "description": "Room ID",
-                        "name": "room_id",
+                        "description": "Payment status",
+                        "name": "status",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Start date (YYYY-MM-DD)",
+                        "name": "start",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "End date (YYYY-MM-DD)",
+                        "name": "end",
                         "in": "query"
                     }
                 ],
@@ -812,16 +269,7 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/models.RoomPhoto"
-                            }
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
+                                "$ref": "#/definitions/models.Reservation"
                             }
                         }
                     },
@@ -833,28 +281,12 @@ const docTemplate = `{
                                 "type": "string"
                             }
                         }
-                    },
-                    "403": {
-                        "description": "Forbidden",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
                     }
                 }
-            },
-            "post": {
+            }
+        },
+        "/admin/reservations/{id}": {
+            "put": {
                 "security": [
                     {
                         "BearerAuth": []
@@ -867,46 +299,32 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Inventory"
+                    "Reservations"
                 ],
-                "summary": "Add room photo",
+                "summary": "Update reservation (admin)",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "Property ID",
-                        "name": "property_id",
-                        "in": "query"
+                        "description": "Reservation ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
                     },
                     {
-                        "type": "string",
-                        "description": "Room type ID",
-                        "name": "room_type_id",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "description": "Room ID",
-                        "name": "room_id",
-                        "in": "query"
-                    },
-                    {
-                        "description": "Photo payload",
+                        "description": "Update reservation",
                         "name": "payload",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/handler.PhotoRequest"
+                            "$ref": "#/definitions/handler.UpdateReservationRequest"
                         }
                     }
                 ],
                 "responses": {
-                    "201": {
-                        "description": "Created",
+                    "200": {
+                        "description": "OK",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
+                            "$ref": "#/definitions/models.Reservation"
                         }
                     },
                     "400": {
@@ -920,24 +338,6 @@ const docTemplate = `{
                     },
                     "401": {
                         "description": "Unauthorized",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "403": {
-                        "description": "Forbidden",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "422": {
-                        "description": "Unprocessable Entity",
                         "schema": {
                             "type": "object",
                             "additionalProperties": {
@@ -965,8 +365,8 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "Property ID",
-                        "name": "property_id",
+                        "description": "Hotel ID",
+                        "name": "hotel_id",
                         "in": "query"
                     }
                 ],
@@ -977,24 +377,6 @@ const docTemplate = `{
                             "type": "array",
                             "items": {
                                 "$ref": "#/definitions/models.RoomType"
-                            }
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
                             }
                         }
                     }
@@ -1023,7 +405,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/handler.CreateRoomTypeRequest"
+                            "$ref": "#/definitions/service.CreateRoomTypeInput"
                         }
                     }
                 ],
@@ -1032,42 +414,6 @@ const docTemplate = `{
                         "description": "Created",
                         "schema": {
                             "$ref": "#/definitions/models.RoomType"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "403": {
-                        "description": "Forbidden",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "422": {
-                        "description": "Unprocessable Entity",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
                         }
                     }
                 }
@@ -1080,12 +426,6 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
                 "tags": [
                     "Inventory"
                 ],
@@ -1093,7 +433,7 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "Room type ID",
+                        "description": "Room Type ID",
                         "name": "id",
                         "in": "path",
                         "required": true
@@ -1104,7 +444,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/handler.UpdateRoomTypeRequest"
+                            "$ref": "#/definitions/service.UpdateRoomTypeInput"
                         }
                     }
                 ],
@@ -1113,42 +453,6 @@ const docTemplate = `{
                         "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/models.RoomType"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "403": {
-                        "description": "Forbidden",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "422": {
-                        "description": "Unprocessable Entity",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
                         }
                     }
                 }
@@ -1166,7 +470,7 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "Room type ID",
+                        "description": "Room Type ID",
                         "name": "id",
                         "in": "path",
                         "required": true
@@ -1174,40 +478,7 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "204": {
-                        "description": "No Content",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "403": {
-                        "description": "Forbidden",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "422": {
-                        "description": "Unprocessable Entity",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
+                        "description": "No Content"
                     }
                 }
             }
@@ -1229,13 +500,13 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "Property ID",
-                        "name": "property_id",
+                        "description": "Hotel ID",
+                        "name": "hotel_id",
                         "in": "query"
                     },
                     {
                         "type": "string",
-                        "description": "Room type ID",
+                        "description": "Room Type ID",
                         "name": "room_type_id",
                         "in": "query"
                     }
@@ -1247,24 +518,6 @@ const docTemplate = `{
                             "type": "array",
                             "items": {
                                 "$ref": "#/definitions/models.Room"
-                            }
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
                             }
                         }
                     }
@@ -1293,7 +546,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/handler.CreateRoomRequest"
+                            "$ref": "#/definitions/service.CreateRoomInput"
                         }
                     }
                 ],
@@ -1302,42 +555,6 @@ const docTemplate = `{
                         "description": "Created",
                         "schema": {
                             "$ref": "#/definitions/models.Room"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "403": {
-                        "description": "Forbidden",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "422": {
-                        "description": "Unprocessable Entity",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
                         }
                     }
                 }
@@ -1349,12 +566,6 @@ const docTemplate = `{
                     {
                         "BearerAuth": []
                     }
-                ],
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
                 ],
                 "tags": [
                     "Inventory"
@@ -1374,7 +585,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/handler.UpdateRoomRequest"
+                            "$ref": "#/definitions/service.UpdateRoomInput"
                         }
                     }
                 ],
@@ -1383,42 +594,6 @@ const docTemplate = `{
                         "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/models.Room"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "403": {
-                        "description": "Forbidden",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "422": {
-                        "description": "Unprocessable Entity",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
                         }
                     }
                 }
@@ -1444,197 +619,7 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "204": {
-                        "description": "No Content",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "403": {
-                        "description": "Forbidden",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "422": {
-                        "description": "Unprocessable Entity",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "/admin/rooms/{room_id}/rates": {
-            "get": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Inventory"
-                ],
-                "summary": "Get room rates",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Room ID",
-                        "name": "room_id",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "Start date (YYYY-MM-DD)",
-                        "name": "start",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "description": "End date (YYYY-MM-DD)",
-                        "name": "end",
-                        "in": "query"
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/handler.RoomRateDoc"
-                            }
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "403": {
-                        "description": "Forbidden",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    }
-                }
-            },
-            "post": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Inventory"
-                ],
-                "summary": "Set room rates",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Room ID",
-                        "name": "room_id",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "Room rate payload",
-                        "name": "payload",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/handler.RoomRateRequestDoc"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "403": {
-                        "description": "Forbidden",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "422": {
-                        "description": "Unprocessable Entity",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
+                        "description": "No Content"
                     }
                 }
             }
@@ -1652,12 +637,12 @@ const docTemplate = `{
                 "tags": [
                     "Admin"
                 ],
-                "summary": "List admin users",
+                "summary": "List staff profiles",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "Property ID",
-                        "name": "property_id",
+                        "description": "Hotel ID",
+                        "name": "hotel_id",
                         "in": "query"
                     }
                 ],
@@ -1667,21 +652,12 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/models.Admin"
+                                "$ref": "#/definitions/models.Profile"
                             }
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
                         "schema": {
                             "type": "object",
                             "additionalProperties": {
@@ -1706,15 +682,15 @@ const docTemplate = `{
                 "tags": [
                     "Admin"
                 ],
-                "summary": "Create admin user",
+                "summary": "Create staff profile",
                 "parameters": [
                     {
-                        "description": "Create admin",
+                        "description": "Create profile",
                         "name": "payload",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/handler.CreateAdminRequest"
+                            "$ref": "#/definitions/handler.CreateProfileRequest"
                         }
                     }
                 ],
@@ -1722,7 +698,7 @@ const docTemplate = `{
                     "201": {
                         "description": "Created",
                         "schema": {
-                            "$ref": "#/definitions/models.Admin"
+                            "$ref": "#/definitions/models.Profile"
                         }
                     },
                     "400": {
@@ -1745,15 +721,6 @@ const docTemplate = `{
                     },
                     "403": {
                         "description": "Forbidden",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "422": {
-                        "description": "Unprocessable Entity",
                         "schema": {
                             "type": "object",
                             "additionalProperties": {
@@ -1780,22 +747,22 @@ const docTemplate = `{
                 "tags": [
                     "Admin"
                 ],
-                "summary": "Update admin user",
+                "summary": "Update staff profile",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "Admin ID",
+                        "description": "Profile ID",
                         "name": "id",
                         "in": "path",
                         "required": true
                     },
                     {
-                        "description": "Update admin",
+                        "description": "Update profile",
                         "name": "payload",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/handler.UpdateAdminRequest"
+                            "$ref": "#/definitions/handler.UpdateProfileRequest"
                         }
                     }
                 ],
@@ -1826,135 +793,43 @@ const docTemplate = `{
                                 "type": "string"
                             }
                         }
-                    },
-                    "403": {
-                        "description": "Forbidden",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "422": {
-                        "description": "Unprocessable Entity",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
                     }
                 }
             }
         },
-        "/admin/users/{id}/activate": {
+        "/ai/recommend": {
             "post": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
+                "description": "Agentic AI memilihkan kamar terbaik berdasarkan preferensi tamu. Set AI_MOCK=true di .env untuk load testing skala besar.",
+                "consumes": [
+                    "application/json"
                 ],
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "Admin"
+                    "AI"
                 ],
-                "summary": "Activate admin user",
+                "summary": "Rekomendasi kamar berbasis AI",
                 "parameters": [
                     {
-                        "type": "string",
-                        "description": "Admin ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
+                        "description": "Preferensi tamu",
+                        "name": "payload",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/service.AIRecommendRequest"
+                        }
                     }
                 ],
                 "responses": {
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
+                            "$ref": "#/definitions/service.AIRecommendResult"
                         }
                     },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "403": {
-                        "description": "Forbidden",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "422": {
-                        "description": "Unprocessable Entity",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "/admin/users/{id}/deactivate": {
-            "post": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Admin"
-                ],
-                "summary": "Deactivate admin user",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Admin ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "403": {
-                        "description": "Forbidden",
+                    "400": {
+                        "description": "Bad Request",
                         "schema": {
                             "type": "object",
                             "additionalProperties": {
@@ -1985,10 +860,10 @@ const docTemplate = `{
                 "tags": [
                     "Auth"
                 ],
-                "summary": "Login admin",
+                "summary": "Login admin/staff",
                 "parameters": [
                     {
-                        "description": "Admin login",
+                        "description": "Login credentials",
                         "name": "payload",
                         "in": "body",
                         "required": true,
@@ -2039,12 +914,12 @@ const docTemplate = `{
                 "summary": "Login guest",
                 "parameters": [
                     {
-                        "description": "Login payload (email or phone)",
+                        "description": "Login",
                         "name": "payload",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/handler.LoginRequest"
+                            "$ref": "#/definitions/handler.GuestLoginRequest"
                         }
                     }
                 ],
@@ -2052,7 +927,8 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/handler.TokenResponseDoc"
+                            "type": "object",
+                            "additionalProperties": true
                         }
                     },
                     "400": {
@@ -2127,291 +1003,6 @@ const docTemplate = `{
                 }
             }
         },
-        "/guests/bookings": {
-            "get": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Guests"
-                ],
-                "summary": "Get my bookings",
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/models.Booking"
-                            }
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    }
-                }
-            },
-            "post": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Guests"
-                ],
-                "summary": "Create booking",
-                "parameters": [
-                    {
-                        "description": "Create booking",
-                        "name": "payload",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/handler.CreateBookingRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "201": {
-                        "description": "Created",
-                        "schema": {
-                            "$ref": "#/definitions/service.BookingCreateResult"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "422": {
-                        "description": "Unprocessable Entity",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "/guests/bookings/{id}/cancel": {
-            "post": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Guests"
-                ],
-                "summary": "Cancel booking",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Booking ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/handler.BookingCancelResponse"
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "422": {
-                        "description": "Unprocessable Entity",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "/guests/bookings/{id}/invoice": {
-            "get": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Guests"
-                ],
-                "summary": "Get booking invoice",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Booking ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/models.Invoice"
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "/guests/bookings/{id}/pay": {
-            "post": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Guests"
-                ],
-                "summary": "Pay booking",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Booking ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "Payment payload",
-                        "name": "payload",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/handler.PayBookingRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/handler.PaymentInvoiceResponse"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "422": {
-                        "description": "Unprocessable Entity",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    }
-                }
-            }
-        },
         "/guests/me": {
             "get": {
                 "security": [
@@ -2441,9 +1032,233 @@ const docTemplate = `{
                                 "type": "string"
                             }
                         }
+                    }
+                }
+            }
+        },
+        "/guests/reservations": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Guests"
+                ],
+                "summary": "Get my reservations",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/models.Reservation"
+                            }
+                        }
                     },
-                    "500": {
-                        "description": "Internal Server Error",
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Guests"
+                ],
+                "summary": "Create reservation",
+                "parameters": [
+                    {
+                        "description": "Create reservation",
+                        "name": "payload",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/handler.CreateReservationRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/service.ReservationCreateResult"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/guests/reservations/{id}/cancel": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Guests"
+                ],
+                "summary": "Cancel reservation",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Reservation ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/guests/reservations/{id}/pay": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Guests"
+                ],
+                "summary": "Pay reservation",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Reservation ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Payment details",
+                        "name": "payload",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/handler.PayReservationRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/guests/reservations/{id}/transactions": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Guests"
+                ],
+                "summary": "Get reservation transactions",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Reservation ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/models.Transaction"
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
                         "schema": {
                             "type": "object",
                             "additionalProperties": {
@@ -2462,14 +1277,13 @@ const docTemplate = `{
                 "tags": [
                     "Hotels"
                 ],
-                "summary": "Search hotels by city",
+                "summary": "Search hotels",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "City name",
-                        "name": "city",
-                        "in": "query",
-                        "required": true
+                        "description": "Search query (name/address)",
+                        "name": "q",
+                        "in": "query"
                     }
                 ],
                 "responses": {
@@ -2478,16 +1292,7 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/models.Properties"
-                            }
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
+                                "$ref": "#/definitions/models.Hotel"
                             }
                         }
                     },
@@ -2525,7 +1330,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/models.PropertyDetailResponse"
+                            "$ref": "#/definitions/models.HotelDetailResponse"
                         }
                     },
                     "404": {
@@ -2548,7 +1353,7 @@ const docTemplate = `{
                 "tags": [
                     "Rooms"
                 ],
-                "summary": "Check room availability",
+                "summary": "Check room availability and get price quote",
                 "parameters": [
                     {
                         "type": "string",
@@ -2576,20 +1381,11 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/handler.AvailabilityResponse"
+                            "$ref": "#/definitions/service.ReservationQuote"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "422": {
-                        "description": "Unprocessable Entity",
                         "schema": {
                             "type": "object",
                             "additionalProperties": {
@@ -2616,59 +1412,27 @@ const docTemplate = `{
         "handler.AdminLoginResponseDoc": {
             "type": "object",
             "properties": {
-                "admin": {
-                    "$ref": "#/definitions/models.Admin"
+                "profile": {
+                    "$ref": "#/definitions/models.Profile"
                 },
                 "session": {
                     "$ref": "#/definitions/handler.TokenResponseDoc"
                 }
             }
         },
-        "handler.AvailabilityResponse": {
-            "type": "object",
-            "properties": {
-                "available": {
-                    "type": "boolean"
-                },
-                "currency": {
-                    "type": "string"
-                },
-                "nightly_rates": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/service.NightlyRate"
-                    }
-                },
-                "nights": {
-                    "type": "integer"
-                },
-                "total_price": {
-                    "type": "number"
-                }
-            }
-        },
-        "handler.BookingCancelResponse": {
-            "type": "object",
-            "properties": {
-                "booking": {
-                    "$ref": "#/definitions/models.Booking"
-                },
-                "payment": {
-                    "$ref": "#/definitions/models.Payment"
-                }
-            }
-        },
-        "handler.CreateAdminRequest": {
+        "handler.CreateProfileRequest": {
             "type": "object",
             "properties": {
                 "email": {
                     "type": "string"
                 },
-                "password": {
+                "full_name": {
                     "type": "string"
                 },
-                "property_id": {
-                    "description": "bisa kosong kalau mau super admin",
+                "hotel_id": {
+                    "type": "string"
+                },
+                "password": {
                     "type": "string"
                 },
                 "role": {
@@ -2676,87 +1440,33 @@ const docTemplate = `{
                 }
             }
         },
-        "handler.CreateBookingRequest": {
+        "handler.CreateReservationRequest": {
             "type": "object",
             "properties": {
+                "booking_source": {
+                    "type": "string"
+                },
                 "check_in": {
                     "type": "string"
                 },
                 "check_out": {
                     "type": "string"
                 },
-                "property_id": {
+                "hotel_id": {
+                    "type": "string"
+                },
+                "payment_method": {
                     "type": "string"
                 },
                 "room_id": {
                     "type": "string"
-                }
-            }
-        },
-        "handler.CreateHotelRequest": {
-            "type": "object",
-            "properties": {
-                "address": {
-                    "type": "string"
                 },
-                "city": {
-                    "type": "string"
-                },
-                "facilities": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
-                },
-                "hotel_code": {
-                    "type": "string"
-                },
-                "name": {
+                "special_requests": {
                     "type": "string"
                 }
             }
         },
-        "handler.CreateRoomRequest": {
-            "type": "object",
-            "properties": {
-                "property_id": {
-                    "type": "string"
-                },
-                "room_number": {
-                    "type": "string"
-                },
-                "room_type_id": {
-                    "type": "string"
-                }
-            }
-        },
-        "handler.CreateRoomTypeRequest": {
-            "type": "object",
-            "properties": {
-                "base_price": {
-                    "type": "number"
-                },
-                "capacity": {
-                    "type": "integer"
-                },
-                "description": {
-                    "type": "string"
-                },
-                "facilities": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
-                },
-                "name": {
-                    "type": "string"
-                },
-                "property_id": {
-                    "type": "string"
-                }
-            }
-        },
-        "handler.LoginRequest": {
+        "handler.GuestLoginRequest": {
             "type": "object",
             "properties": {
                 "login": {
@@ -2767,35 +1477,10 @@ const docTemplate = `{
                 }
             }
         },
-        "handler.PayBookingRequest": {
+        "handler.PayReservationRequest": {
             "type": "object",
             "properties": {
-                "provider": {
-                    "type": "string"
-                },
-                "reference": {
-                    "type": "string"
-                }
-            }
-        },
-        "handler.PaymentInvoiceResponse": {
-            "type": "object",
-            "properties": {
-                "invoice": {
-                    "$ref": "#/definitions/models.Invoice"
-                },
-                "payment": {
-                    "$ref": "#/definitions/models.Payment"
-                }
-            }
-        },
-        "handler.PhotoRequest": {
-            "type": "object",
-            "properties": {
-                "caption": {
-                    "type": "string"
-                },
-                "url": {
+                "payment_method": {
                     "type": "string"
                 }
             }
@@ -2803,101 +1488,23 @@ const docTemplate = `{
         "handler.RegisterGuestRequest": {
             "type": "object",
             "properties": {
-                "country": {
-                    "type": "string"
-                },
                 "email": {
                     "type": "string"
                 },
-                "first_name": {
+                "full_name": {
                     "type": "string"
                 },
-                "gender": {
-                    "$ref": "#/definitions/models.Gender"
-                },
-                "last_name": {
+                "hotel_id": {
                     "type": "string"
                 },
                 "password": {
                     "type": "string"
                 },
-                "phone": {
-                    "type": "string"
-                }
-            }
-        },
-        "handler.RoomRateDoc": {
-            "type": "object",
-            "properties": {
-                "available_rooms": {
-                    "type": "integer"
-                },
-                "close_on_arrival": {
-                    "type": "boolean"
-                },
-                "close_on_departure": {
-                    "type": "boolean"
-                },
-                "created_at": {
+                "phone_number": {
                     "type": "string"
                 },
-                "date": {
+                "title": {
                     "type": "string"
-                },
-                "id": {
-                    "type": "string"
-                },
-                "linear_rate": {
-                    "type": "number"
-                },
-                "max_nights": {
-                    "type": "integer"
-                },
-                "min_nights": {
-                    "type": "integer"
-                },
-                "non_linear_rate": {},
-                "room_id": {
-                    "type": "string"
-                },
-                "stop_sell": {
-                    "type": "boolean"
-                }
-            }
-        },
-        "handler.RoomRateRequestDoc": {
-            "type": "object",
-            "properties": {
-                "available_rooms": {
-                    "type": "integer"
-                },
-                "close_on_arrival": {
-                    "type": "boolean"
-                },
-                "close_on_departure": {
-                    "type": "boolean"
-                },
-                "dates": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
-                },
-                "linear_rate": {
-                    "type": "number"
-                },
-                "max_nights": {
-                    "type": "integer"
-                },
-                "min_nights": {
-                    "type": "integer"
-                },
-                "non_linear_rate": {},
-                "room_id": {
-                    "type": "string"
-                },
-                "stop_sell": {
-                    "type": "boolean"
                 }
             }
         },
@@ -2925,13 +1532,10 @@ const docTemplate = `{
                 }
             }
         },
-        "handler.UpdateAdminRequest": {
+        "handler.UpdateProfileRequest": {
             "type": "object",
             "properties": {
-                "is_active": {
-                    "type": "boolean"
-                },
-                "property_id": {
+                "hotel_id": {
                     "type": "string"
                 },
                 "role": {
@@ -2939,377 +1543,160 @@ const docTemplate = `{
                 }
             }
         },
-        "handler.UpdateBookingStatusRequest": {
+        "handler.UpdateReservationRequest": {
             "type": "object",
             "properties": {
-                "note": {
+                "ai_notes": {
                     "type": "string"
                 },
-                "refund_amount": {
-                    "type": "number"
-                },
-                "status": {
-                    "$ref": "#/definitions/models.BookingStatus"
-                }
-            }
-        },
-        "handler.UpdateHotelRequest": {
-            "type": "object",
-            "properties": {
-                "address": {
+                "checked_in_at": {
                     "type": "string"
                 },
-                "cancellation_policy": {
+                "checked_out_at": {
                     "type": "string"
                 },
-                "checkin_time": {
-                    "type": "string"
-                },
-                "checkout_time": {
-                    "type": "string"
-                },
-                "city": {
-                    "type": "string"
-                },
-                "facilities": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
-                },
-                "name": {
+                "payment_status": {
                     "type": "string"
                 }
             }
         },
-        "handler.UpdateRoomRequest": {
-            "type": "object",
-            "properties": {
-                "housekeeping_status": {
-                    "$ref": "#/definitions/models.HousekeepingStatus"
-                },
-                "property_id": {
-                    "type": "string"
-                },
-                "room_number": {
-                    "type": "string"
-                },
-                "room_type_id": {
-                    "type": "string"
-                },
-                "status": {
-                    "$ref": "#/definitions/models.RoomStatus"
-                }
-            }
-        },
-        "handler.UpdateRoomTypeRequest": {
-            "type": "object",
-            "properties": {
-                "base_price": {
-                    "type": "number"
-                },
-                "capacity": {
-                    "type": "integer"
-                },
-                "description": {
-                    "type": "string"
-                },
-                "facilities": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
-                },
-                "name": {
-                    "type": "string"
-                },
-                "property_id": {
-                    "type": "string"
-                }
-            }
-        },
-        "models.Admin": {
-            "type": "object",
-            "properties": {
-                "created_at": {
-                    "type": "string"
-                },
-                "email": {
-                    "type": "string"
-                },
-                "id": {
-                    "type": "string"
-                },
-                "is_active": {
-                    "type": "boolean"
-                },
-                "property_id": {
-                    "type": "string"
-                },
-                "role": {
-                    "type": "string"
-                }
-            }
-        },
-        "models.Booking": {
-            "type": "object",
-            "properties": {
-                "booking_status": {
-                    "$ref": "#/definitions/models.BookingStatus"
-                },
-                "check_in": {
-                    "type": "string"
-                },
-                "check_out": {
-                    "type": "string"
-                },
-                "created_at": {
-                    "type": "string"
-                },
-                "guest_id": {
-                    "type": "string"
-                },
-                "id": {
-                    "type": "string"
-                },
-                "nights": {
-                    "type": "integer"
-                },
-                "note": {
-                    "type": "string"
-                },
-                "property_id": {
-                    "type": "string"
-                },
-                "refund_amount": {
-                    "type": "number"
-                },
-                "room_id": {
-                    "type": "string"
-                },
-                "total_price": {
-                    "type": "number"
-                }
-            }
-        },
-        "models.BookingStatus": {
+        "models.BookingSource": {
             "type": "string",
             "enum": [
-                "New",
-                "Confirmed",
-                "Cancelled",
-                "CheckedIn",
-                "CheckedOut",
-                "NoShow"
+                "walk_in",
+                "online",
+                "phone",
+                "ota",
+                "corporate"
             ],
             "x-enum-varnames": [
-                "BookingStatusNew",
-                "BookingStatusConfirmed",
-                "BookingStatusCancel",
-                "BookingStatusCheckedIn",
-                "BookingStatusCheckedOut",
-                "BookingStatusNoShow"
+                "BookingSourceWalkIn",
+                "BookingSourceOnline",
+                "BookingSourcePhone",
+                "BookingSourceOTA",
+                "BookingSourceCorporate"
             ]
         },
-        "models.Gender": {
+        "models.CleanStatus": {
             "type": "string",
             "enum": [
-                "Male",
-                "Female"
+                "clean",
+                "dirty",
+                "inspected",
+                "pickup",
+                "out_of_order",
+                "out_of_service"
             ],
             "x-enum-varnames": [
-                "GenderMale",
-                "GenderFemale"
+                "CleanStatusClean",
+                "CleanStatusDirty",
+                "CleanStatusInspected",
+                "CleanStatusPickup",
+                "CleanStatusOutOfOrder",
+                "CleanStatusOutOfService"
             ]
         },
         "models.Guest": {
             "type": "object",
             "properties": {
-                "address": {
-                    "type": "string"
-                },
-                "city": {
-                    "type": "string"
-                },
-                "country": {
+                "created_at": {
                     "type": "string"
                 },
                 "email": {
                     "type": "string"
                 },
-                "first_name": {
+                "full_name": {
                     "type": "string"
                 },
-                "gender": {
-                    "$ref": "#/definitions/models.Gender"
-                },
-                "guest_type": {
-                    "$ref": "#/definitions/models.GuestType"
+                "hotel_id": {
+                    "type": "string"
                 },
                 "id": {
                     "type": "string"
                 },
-                "last_name": {
+                "last_visit_at": {
                     "type": "string"
                 },
-                "nationality": {
+                "loyalty_points": {
+                    "type": "integer"
+                },
+                "loyalty_tier": {
+                    "$ref": "#/definitions/models.GuestTier"
+                },
+                "phone_number": {
                     "type": "string"
                 },
-                "phone": {
+                "preferences": {
+                    "type": "object"
+                },
+                "title": {
                     "type": "string"
                 },
-                "postal_code": {
-                    "type": "string"
-                },
-                "state": {
-                    "type": "string"
-                },
-                "vip_status": {
-                    "$ref": "#/definitions/models.VIPStatus"
-                }
-            }
-        },
-        "models.GuestType": {
-            "type": "string",
-            "enum": [
-                "Adult",
-                "Child"
-            ],
-            "x-enum-varnames": [
-                "GuestTypeAdult",
-                "GuestTypeChild"
-            ]
-        },
-        "models.HousekeepingStatus": {
-            "type": "string",
-            "enum": [
-                "Clean",
-                "Dirty",
-                "Inspected",
-                "Pickup",
-                "OutOfOrder",
-                "OutOfService"
-            ],
-            "x-enum-varnames": [
-                "HousekeepingStatusClean",
-                "HousekeepingStatusDirty",
-                "HousekeepingStatusInspected",
-                "HousekeepingStatusPickup",
-                "HousekeepingStatusOutOfOrder",
-                "HousekeepingStatusOutOfService"
-            ]
-        },
-        "models.Invoice": {
-            "type": "object",
-            "properties": {
-                "amount": {
+                "total_spend": {
                     "type": "number"
                 },
-                "booking_id": {
-                    "type": "string"
-                },
-                "id": {
-                    "type": "string"
-                },
-                "invoice_number": {
-                    "type": "string"
-                },
-                "issued_at": {
-                    "type": "string"
-                },
-                "status": {
-                    "$ref": "#/definitions/models.PaymentStatus"
+                "total_stays": {
+                    "type": "integer"
                 }
             }
         },
-        "models.Payment": {
-            "type": "object",
-            "properties": {
-                "amount": {
-                    "type": "number"
-                },
-                "booking_id": {
-                    "type": "string"
-                },
-                "created_at": {
-                    "type": "string"
-                },
-                "id": {
-                    "type": "string"
-                },
-                "paid_at": {
-                    "type": "string"
-                },
-                "provider": {
-                    "type": "string"
-                },
-                "reference": {
-                    "type": "string"
-                },
-                "status": {
-                    "$ref": "#/definitions/models.PaymentStatus"
-                }
-            }
-        },
-        "models.PaymentStatus": {
+        "models.GuestTier": {
             "type": "string",
             "enum": [
-                "Pending",
-                "Paid",
-                "Refunded"
+                "bronze",
+                "silver",
+                "gold",
+                "platinum",
+                "diamond"
             ],
             "x-enum-varnames": [
-                "PaymentStatusPending",
-                "PaymentStatusPaid",
-                "PaymentStatusRefunded"
+                "GuestTierBronze",
+                "GuestTierSilver",
+                "GuestTierGold",
+                "GuestTierPlatinum",
+                "GuestTierDiamond"
             ]
         },
-        "models.Properties": {
+        "models.Hotel": {
             "type": "object",
             "properties": {
                 "address": {
                     "type": "string"
                 },
-                "auth_code": {
+                "check_in_time": {
                     "type": "string"
                 },
-                "cancellation_policy": {
+                "check_out_time": {
                     "type": "string"
                 },
-                "checkin_time": {
-                    "type": "string"
-                },
-                "checkout_time": {
-                    "type": "string"
-                },
-                "city": {
+                "code": {
                     "type": "string"
                 },
                 "created_at": {
                     "type": "string"
                 },
-                "facilities": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
-                },
-                "hotel_code": {
+                "id": {
                     "type": "string"
                 },
-                "id": {
+                "image_url": {
                     "type": "string"
                 },
                 "name": {
                     "type": "string"
+                },
+                "settings": {
+                    "type": "object"
+                },
+                "status": {
+                    "type": "string"
                 }
             }
         },
-        "models.PropertyDetailResponse": {
+        "models.HotelDetailResponse": {
             "type": "object",
             "properties": {
-                "property": {
-                    "$ref": "#/definitions/models.Properties"
+                "hotel": {
+                    "$ref": "#/definitions/models.Hotel"
                 },
                 "room_types": {
                     "type": "array",
@@ -3319,22 +1706,105 @@ const docTemplate = `{
                 }
             }
         },
-        "models.PropertyPhoto": {
+        "models.PaymentStatus": {
+            "type": "string",
+            "enum": [
+                "pending",
+                "paid",
+                "cancelled"
+            ],
+            "x-enum-varnames": [
+                "PaymentStatusPending",
+                "PaymentStatusPaid",
+                "PaymentStatusCancelled"
+            ]
+        },
+        "models.Profile": {
             "type": "object",
             "properties": {
-                "caption": {
+                "created_at": {
                     "type": "string"
                 },
-                "created_at": {
+                "email": {
+                    "type": "string"
+                },
+                "full_name": {
+                    "type": "string"
+                },
+                "hotel_id": {
                     "type": "string"
                 },
                 "id": {
                     "type": "string"
                 },
-                "property_id": {
+                "role": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.Reservation": {
+            "type": "object",
+            "properties": {
+                "agent_id": {
                     "type": "string"
                 },
-                "url": {
+                "ai_notes": {
+                    "type": "string"
+                },
+                "booking_source": {
+                    "$ref": "#/definitions/models.BookingSource"
+                },
+                "check_in_date": {
+                    "type": "string"
+                },
+                "check_out_date": {
+                    "type": "string"
+                },
+                "checked_in_at": {
+                    "type": "string"
+                },
+                "checked_out_at": {
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "guest_id": {
+                    "type": "string"
+                },
+                "hotel_id": {
+                    "type": "string"
+                },
+                "hotels": {
+                    "$ref": "#/definitions/models.ReservationHotel"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "payment_method": {
+                    "type": "string"
+                },
+                "payment_status": {
+                    "$ref": "#/definitions/models.PaymentStatus"
+                },
+                "room_id": {
+                    "type": "string"
+                },
+                "special_requests": {
+                    "type": "string"
+                },
+                "total_price": {
+                    "type": "number"
+                }
+            }
+        },
+        "models.ReservationHotel": {
+            "type": "object",
+            "properties": {
+                "address": {
+                    "type": "string"
+                },
+                "name": {
                     "type": "string"
                 }
             }
@@ -3342,16 +1812,25 @@ const docTemplate = `{
         "models.Room": {
             "type": "object",
             "properties": {
+                "cleaning_status": {
+                    "$ref": "#/definitions/models.CleanStatus"
+                },
                 "created_at": {
                     "type": "string"
                 },
-                "housekeeping_status": {
-                    "$ref": "#/definitions/models.HousekeepingStatus"
+                "floor_number": {
+                    "type": "integer"
+                },
+                "furniture_condition": {
+                    "type": "string"
+                },
+                "hotel_id": {
+                    "type": "string"
                 },
                 "id": {
                     "type": "string"
                 },
-                "property_id": {
+                "last_renovation_date": {
                     "type": "string"
                 },
                 "room_number": {
@@ -3363,33 +1842,16 @@ const docTemplate = `{
                 "room_type_id": {
                     "type": "string"
                 },
+                "special_notes": {
+                    "type": "string"
+                },
                 "status": {
                     "$ref": "#/definitions/models.RoomStatus"
-                }
-            }
-        },
-        "models.RoomPhoto": {
-            "type": "object",
-            "properties": {
-                "caption": {
+                },
+                "updated_at": {
                     "type": "string"
                 },
-                "created_at": {
-                    "type": "string"
-                },
-                "id": {
-                    "type": "string"
-                },
-                "property_id": {
-                    "type": "string"
-                },
-                "room_id": {
-                    "type": "string"
-                },
-                "room_type_id": {
-                    "type": "string"
-                },
-                "url": {
+                "wing": {
                     "type": "string"
                 }
             }
@@ -3397,21 +1859,30 @@ const docTemplate = `{
         "models.RoomStatus": {
             "type": "string",
             "enum": [
-                "Available",
-                "Occupied",
-                "OutOfOrder"
+                "available",
+                "occupied",
+                "maintenance"
             ],
             "x-enum-varnames": [
                 "RoomStatusAvailable",
                 "RoomStatusOccupied",
-                "RoomStatusOutOfOrder"
+                "RoomStatusMaintenance"
             ]
         },
         "models.RoomType": {
             "type": "object",
             "properties": {
+                "amenities": {
+                    "type": "object"
+                },
                 "base_price": {
                     "type": "number"
+                },
+                "bed_count": {
+                    "type": "integer"
+                },
+                "bed_type": {
+                    "type": "string"
                 },
                 "capacity": {
                     "type": "integer"
@@ -3422,86 +1893,201 @@ const docTemplate = `{
                 "description": {
                     "type": "string"
                 },
-                "facilities": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
+                "hotel_id": {
+                    "type": "string"
                 },
                 "id": {
                     "type": "string"
                 },
+                "images": {
+                    "type": "object"
+                },
                 "name": {
                     "type": "string"
                 },
-                "property_id": {
-                    "type": "string"
-                }
-            }
-        },
-        "models.VIPStatus": {
-            "type": "string",
-            "enum": [
-                "Bronze",
-                "Silver",
-                "Gold",
-                "Platinum"
-            ],
-            "x-enum-varnames": [
-                "VIPStatusBronze",
-                "VIPStatusSilver",
-                "VIPStatusGold",
-                "VIPStatusPlatinum"
-            ]
-        },
-        "service.BookingCreateResult": {
-            "type": "object",
-            "properties": {
-                "booking": {
-                    "$ref": "#/definitions/models.Booking"
+                "price_per_night": {
+                    "type": "number"
                 },
-                "invoice": {
-                    "$ref": "#/definitions/models.Invoice"
+                "size_sqm": {
+                    "type": "number"
                 },
-                "payment": {
-                    "$ref": "#/definitions/models.Payment"
-                },
-                "quote": {
-                    "$ref": "#/definitions/service.BookingQuote"
-                }
-            }
-        },
-        "service.BookingQuote": {
-            "type": "object",
-            "properties": {
-                "available": {
+                "smoking_allowed": {
                     "type": "boolean"
                 },
-                "currency": {
+                "updated_at": {
                     "type": "string"
                 },
-                "nightly_rates": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/service.NightlyRate"
-                    }
-                },
-                "nights": {
-                    "type": "integer"
-                },
-                "total_price": {
-                    "type": "number"
+                "view_type": {
+                    "type": "string"
                 }
             }
         },
-        "service.NightlyRate": {
+        "models.Transaction": {
             "type": "object",
             "properties": {
-                "date": {
+                "amount": {
+                    "type": "number"
+                },
+                "created_at": {
                     "type": "string"
                 },
-                "rate": {
+                "created_by": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "reservation_id": {
+                    "type": "string"
+                },
+                "type": {
+                    "$ref": "#/definitions/models.TransactionType"
+                }
+            }
+        },
+        "models.TransactionType": {
+            "type": "string",
+            "enum": [
+                "charge",
+                "payment",
+                "refund"
+            ],
+            "x-enum-varnames": [
+                "TransactionTypeCharge",
+                "TransactionTypePayment",
+                "TransactionTypeRefund"
+            ]
+        },
+        "service.AIRecommendRequest": {
+            "type": "object",
+            "properties": {
+                "budget": {
                     "type": "number"
+                },
+                "check_in": {
+                    "type": "string"
+                },
+                "check_out": {
+                    "type": "string"
+                },
+                "preferences": {
+                    "type": "string"
+                },
+                "query": {
+                    "type": "string"
+                }
+            }
+        },
+        "service.AIRecommendResult": {
+            "type": "object",
+            "properties": {
+                "estimated_price": {
+                    "type": "number"
+                },
+                "hotel_id": {
+                    "type": "string"
+                },
+                "hotel_name": {
+                    "type": "string"
+                },
+                "promo_message": {
+                    "type": "string"
+                },
+                "reasoning": {
+                    "type": "string"
+                },
+                "recommended_room_id": {
+                    "type": "string"
+                },
+                "room_number": {
+                    "type": "string"
+                }
+            }
+        },
+        "service.CreateHotelInput": {
+            "type": "object",
+            "properties": {
+                "address": {
+                    "type": "string"
+                },
+                "check_in_time": {
+                    "type": "string"
+                },
+                "check_out_time": {
+                    "type": "string"
+                },
+                "code": {
+                    "type": "string"
+                },
+                "image_url": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
+        "service.CreateRoomInput": {
+            "type": "object",
+            "properties": {
+                "floor_number": {
+                    "type": "integer"
+                },
+                "hotel_id": {
+                    "type": "string"
+                },
+                "room_number": {
+                    "type": "string"
+                },
+                "room_type_id": {
+                    "type": "string"
+                },
+                "wing": {
+                    "type": "string"
+                }
+            }
+        },
+        "service.CreateRoomTypeInput": {
+            "type": "object",
+            "properties": {
+                "amenities": {
+                    "type": "object"
+                },
+                "bed_count": {
+                    "type": "integer"
+                },
+                "bed_type": {
+                    "type": "string"
+                },
+                "capacity": {
+                    "type": "integer"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "hotel_id": {
+                    "type": "string"
+                },
+                "images": {
+                    "type": "object"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "price_per_night": {
+                    "type": "number"
+                },
+                "size_sqm": {
+                    "type": "number"
+                },
+                "smoking_allowed": {
+                    "type": "boolean"
+                },
+                "view_type": {
+                    "type": "string"
                 }
             }
         },
@@ -3527,8 +2113,135 @@ const docTemplate = `{
                 "revpar": {
                     "type": "number"
                 },
-                "total_bookings": {
+                "total_reservations": {
                     "type": "integer"
+                }
+            }
+        },
+        "service.ReservationCreateResult": {
+            "type": "object",
+            "properties": {
+                "quote": {
+                    "$ref": "#/definitions/service.ReservationQuote"
+                },
+                "reservation": {
+                    "$ref": "#/definitions/models.Reservation"
+                },
+                "transaction": {
+                    "$ref": "#/definitions/models.Transaction"
+                }
+            }
+        },
+        "service.ReservationQuote": {
+            "type": "object",
+            "properties": {
+                "available": {
+                    "type": "boolean"
+                },
+                "currency": {
+                    "type": "string"
+                },
+                "nights": {
+                    "type": "integer"
+                },
+                "price_per_night": {
+                    "type": "number"
+                },
+                "total_price": {
+                    "type": "number"
+                }
+            }
+        },
+        "service.UpdateHotelInput": {
+            "type": "object",
+            "properties": {
+                "address": {
+                    "type": "string"
+                },
+                "check_in_time": {
+                    "type": "string"
+                },
+                "check_out_time": {
+                    "type": "string"
+                },
+                "code": {
+                    "type": "string"
+                },
+                "image_url": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "settings": {
+                    "type": "object"
+                },
+                "status": {
+                    "type": "string"
+                }
+            }
+        },
+        "service.UpdateRoomInput": {
+            "type": "object",
+            "properties": {
+                "cleaning_status": {
+                    "$ref": "#/definitions/models.CleanStatus"
+                },
+                "floor_number": {
+                    "type": "integer"
+                },
+                "furniture_condition": {
+                    "type": "string"
+                },
+                "room_number": {
+                    "type": "string"
+                },
+                "special_notes": {
+                    "type": "string"
+                },
+                "status": {
+                    "$ref": "#/definitions/models.RoomStatus"
+                },
+                "wing": {
+                    "type": "string"
+                }
+            }
+        },
+        "service.UpdateRoomTypeInput": {
+            "type": "object",
+            "properties": {
+                "amenities": {
+                    "type": "object"
+                },
+                "bed_count": {
+                    "type": "integer"
+                },
+                "bed_type": {
+                    "type": "string"
+                },
+                "capacity": {
+                    "type": "integer"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "images": {
+                    "type": "object"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "price_per_night": {
+                    "type": "number"
+                },
+                "size_sqm": {
+                    "type": "number"
+                },
+                "smoking_allowed": {
+                    "type": "boolean"
+                },
+                "view_type": {
+                    "type": "string"
                 }
             }
         }

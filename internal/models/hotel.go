@@ -14,7 +14,7 @@ type Hotel struct {
 	Status       string          `json:"status"`
 	Code         string          `json:"code,omitempty"`
 	ImageURL     string          `json:"image_url,omitempty"`
-	Settings     json.RawMessage `json:"settings,omitempty"`
+	Settings     json.RawMessage `json:"settings,omitempty" swaggertype:"object"`
 	CheckInTime  string          `json:"check_in_time,omitempty"`
 	CheckOutTime string          `json:"check_out_time,omitempty"`
 	CreatedAt    time.Time       `json:"created_at"`

@@ -13,7 +13,7 @@ type RoomType struct {
 	Name           string          `json:"name"`
 	PricePerNight  float64         `json:"price_per_night"`
 	Capacity       int             `json:"capacity"`
-	Amenities      json.RawMessage `json:"amenities,omitempty"`
+	Amenities      json.RawMessage `json:"amenities,omitempty" swaggertype:"object"`
 	BasePrice      float64         `json:"base_price,omitempty"`
 	Description    string          `json:"description,omitempty"`
 	SizeSqm        float64         `json:"size_sqm,omitempty"`
@@ -21,7 +21,7 @@ type RoomType struct {
 	BedCount       int             `json:"bed_count,omitempty"`
 	ViewType       string          `json:"view_type,omitempty"`
 	SmokingAllowed bool            `json:"smoking_allowed"`
-	Images         json.RawMessage `json:"images,omitempty"`
+	Images         json.RawMessage `json:"images,omitempty" swaggertype:"object"`
 	CreatedAt      time.Time       `json:"created_at"`
 	UpdatedAt      time.Time       `json:"updated_at"`
 }

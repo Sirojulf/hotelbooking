@@ -27,7 +27,7 @@ type UpdateHotelInput struct {
 	ImageURL     string          `json:"image_url"`
 	CheckInTime  string          `json:"check_in_time"`
 	CheckOutTime string          `json:"check_out_time"`
-	Settings     json.RawMessage `json:"settings"`
+	Settings     json.RawMessage `json:"settings" swaggertype:"object"`
 }
 
 type CreateRoomTypeInput struct {
@@ -41,8 +41,8 @@ type CreateRoomTypeInput struct {
 	ViewType       string          `json:"view_type"`
 	SizeSqm        float64         `json:"size_sqm"`
 	SmokingAllowed bool            `json:"smoking_allowed"`
-	Amenities      json.RawMessage `json:"amenities"`
-	Images         json.RawMessage `json:"images"`
+	Amenities      json.RawMessage `json:"amenities" swaggertype:"object"`
+	Images         json.RawMessage `json:"images" swaggertype:"object"`
 }
 
 type UpdateRoomTypeInput struct {
@@ -55,8 +55,8 @@ type UpdateRoomTypeInput struct {
 	ViewType       string          `json:"view_type"`
 	SizeSqm        float64         `json:"size_sqm"`
 	SmokingAllowed bool            `json:"smoking_allowed"`
-	Amenities      json.RawMessage `json:"amenities"`
-	Images         json.RawMessage `json:"images"`
+	Amenities      json.RawMessage `json:"amenities" swaggertype:"object"`
+	Images         json.RawMessage `json:"images" swaggertype:"object"`
 }
 
 type CreateRoomInput struct {
