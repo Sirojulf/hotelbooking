@@ -76,7 +76,7 @@ func (s *guestService) RegisterGuest(input RegisterGuestInput) (*models.Guest, e
 		Email:       user.Email,
 		PhoneNumber: input.PhoneNumber,
 		Title:       input.Title,
-		LoyaltyTier: string(models.GuestTierBronze),
+		LoyaltyTier: models.GuestTierBronze,
 	}
 
 	if err := s.guestRepo.CreateGuest(guest); err != nil {

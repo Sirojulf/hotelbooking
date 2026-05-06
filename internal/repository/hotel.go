@@ -98,6 +98,9 @@ func (r *hotelRepo) UpdateHotel(hotel models.Hotel) (*models.Hotel, error) {
 	if hotel.ImageURL != "" {
 		updates["image_url"] = hotel.ImageURL
 	}
+	if hotel.Settings != nil {
+		updates["settings"] = hotel.Settings
+	}
 	resp, _, err := config.SupabaseClient.From("hotels").Update(updates, "", "").Eq("id", hotel.ID.String()).Single().Execute()
 	if err != nil {
 		return nil, fmt.Errorf("gagal memperbarui hotel: %v", err)

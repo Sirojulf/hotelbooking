@@ -11,6 +11,7 @@
       "item": [
         {
           "name": "Health Check",
+          "id": "6cd4d692-79f2-474c-951e-6cdaef3c5af0",
           "request": {
             "method": "GET",
             "header": [],
@@ -25,20 +26,10 @@
             },
             "description": "Check if the Hotel Booking API is running"
           },
-          "response": [],
-          "event": {
-            "script": {
-              "exec": [
-                "pm.test(\"Status code is 200\", function () {",
-                "  pm.response.to.have.status(200);",
-                "});"
-              ],
-              "type": "text/javascript"
-            },
-            "listen": "test"
-          }
+          "response": []
         }
       ],
+      "id": "42d90005-22c0-4bb5-806b-c0814c47ad01",
       "description": "API health check endpoint"
     },
     {
@@ -49,6 +40,7 @@
           "item": [
             {
               "name": "Register Guest",
+              "id": "a79b91b5-15eb-482b-aba3-f78eb76a9804",
               "request": {
                 "method": "POST",
                 "header": [
@@ -76,21 +68,58 @@
                 },
                 "description": "Register a new guest account"
               },
-              "response": [],
-              "event": {
-                "script": {
-                  "exec": [
-                    "pm.test(\"Status code is 201\", function () {",
-                    "  pm.response.to.have.status(201);",
-                    "});"
-                  ],
-                  "type": "text/javascript"
-                },
-                "listen": "test"
-              }
+              "response": []
             },
             {
               "name": "Login Guest",
+              "event": [
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "id": "54f03897-e784-4020-94a0-62d0c7ae8e7c",
+                    "exec": [
+                      ""
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                },
+                {
+                  "listen": "test",
+                  "script": {
+                    "id": "100b0c93-ebb6-4d38-b8c7-b196c3ec1de1",
+                    "exec": [
+                      "const response = pm.response.json();\r",
+                      "let token = null;\r",
+                      "\r",
+                      "// Coba beberapa kemungkinan field name\r",
+                      "if      (response.token)              token = response.token;\r",
+                      "else if (response.access_token)       token = response.access_token;\r",
+                      "else if (response.data?.token)        token = response.data.token;\r",
+                      "else if (response.data?.access_token) token = response.data.access_token;\r",
+                      "\r",
+                      "if (token) {\r",
+                      "    pm.environment.set('token', token);\r",
+                      "    console.log('✅ Token tersimpan:', token.substring(0, 30) + '...');\r",
+                      "} else {\r",
+                      "    console.warn('⚠️ Token tidak ditemukan. Struktur response:', response);\r",
+                      "}\r",
+                      "\r",
+                      "pm.test('Login berhasil', () => {\r",
+                      "    pm.response.to.have.status(200);\r",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "id": "5ab9219b-d32c-4953-b34f-27aed9382632",
+              "protocolProfileBehavior": {
+                "disabledSystemHeaders": {}
+              },
               "request": {
                 "method": "POST",
                 "header": [
@@ -101,13 +130,15 @@
                 ],
                 "body": {
                   "mode": "raw",
-                  "raw": "{\n  \"login\": \"\",\n  \"password\": \"\"\n}"
+                  "raw": "{\n  \"login\": \"k6test@mail.com\",\n  \"password\": \"password123\"\n}"
                 },
                 "url": {
-                  "raw": "{{baseUrl}}/api/v1/auth/guest/login",
+                  "raw": "http://localhost:8080/api/v1/auth/guest/login",
+                  "protocol": "http",
                   "host": [
-                    "{{baseUrl}}"
+                    "localhost"
                   ],
+                  "port": "8080",
                   "path": [
                     "api",
                     "v1",
@@ -118,24 +149,10 @@
                 },
                 "description": "Login as a guest user (email or phone)"
               },
-              "response": [],
-              "event": {
-                "script": {
-                  "exec": [
-                    "pm.test(\"Status code is 200\", function () {",
-                    "  pm.response.to.have.status(200);",
-                    "});",
-                    "var json = pm.response.json();",
-                    "if (json && json.access_token) {",
-                    "  pm.environment.set(\"token\", json.access_token);",
-                    "}"
-                  ],
-                  "type": "text/javascript"
-                },
-                "listen": "test"
-              }
+              "response": []
             }
           ],
+          "id": "1773d115-56b3-488d-94a0-831ebe5c60b2",
           "description": "Guest authentication endpoints"
         },
         {
@@ -143,6 +160,7 @@
           "item": [
             {
               "name": "Login Admin",
+              "id": "69746cb1-84d2-43fb-95db-02ddf48ef5d7",
               "request": {
                 "method": "POST",
                 "header": [
@@ -170,27 +188,14 @@
                 },
                 "description": "Login as an admin user"
               },
-              "response": [],
-              "event": {
-                "script": {
-                  "exec": [
-                    "pm.test(\"Status code is 200\", function () {",
-                    "  pm.response.to.have.status(200);",
-                    "});",
-                    "var json = pm.response.json();",
-                    "if (json && json.session && json.session.access_token) {",
-                    "  pm.environment.set(\"adminToken\", json.session.access_token);",
-                    "}"
-                  ],
-                  "type": "text/javascript"
-                },
-                "listen": "test"
-              }
+              "response": []
             }
           ],
+          "id": "ef34e797-31c6-40e0-b057-5ac4c9aa8981",
           "description": "Admin authentication endpoints"
         }
       ],
+      "id": "ac4e4dfc-3ea3-4790-beb7-b597d9e5fd75",
       "description": "Authentication endpoints for guests and admins"
     },
     {
@@ -198,6 +203,7 @@
       "item": [
         {
           "name": "Search Hotels",
+          "id": "a1119921-3d68-496f-8673-d213a18d50f4",
           "request": {
             "method": "GET",
             "header": [],
@@ -221,21 +227,11 @@
             },
             "description": "Search hotels by city (public endpoint)"
           },
-          "response": [],
-          "event": {
-            "script": {
-              "exec": [
-                "pm.test(\"Status code is 200\", function () {",
-                "  pm.response.to.have.status(200);",
-                "});"
-              ],
-              "type": "text/javascript"
-            },
-            "listen": "test"
-          }
+          "response": []
         },
         {
           "name": "Get Hotel Detail",
+          "id": "319ab18b-2bc9-4004-89cb-72f0951ea1f5",
           "request": {
             "method": "GET",
             "header": [],
@@ -260,20 +256,10 @@
             },
             "description": "Get detailed information about a specific hotel (public endpoint)"
           },
-          "response": [],
-          "event": {
-            "script": {
-              "exec": [
-                "pm.test(\"Status code is 200\", function () {",
-                "  pm.response.to.have.status(200);",
-                "});"
-              ],
-              "type": "text/javascript"
-            },
-            "listen": "test"
-          }
+          "response": []
         }
       ],
+      "id": "5ae98dc5-2ab5-4a86-8fae-f0e132de35a7",
       "description": "Public hotel search and detail endpoints"
     },
     {
@@ -281,6 +267,7 @@
       "item": [
         {
           "name": "Check Room Availability",
+          "id": "6db9e97c-cf00-4695-aefd-8bf581cb4578",
           "request": {
             "method": "GET",
             "header": [],
@@ -318,20 +305,10 @@
             },
             "description": "Check availability for a specific room (public endpoint)"
           },
-          "response": [],
-          "event": {
-            "script": {
-              "exec": [
-                "pm.test(\"Status code is 200\", function () {",
-                "  pm.response.to.have.status(200);",
-                "});"
-              ],
-              "type": "text/javascript"
-            },
-            "listen": "test"
-          }
+          "response": []
         }
       ],
+      "id": "58a1cae8-88c9-4717-980e-2a7e20bc67c5",
       "description": "Public room availability endpoint"
     },
     {
@@ -339,6 +316,7 @@
       "item": [
         {
           "name": "Get My Profile",
+          "id": "3a95b0af-25d8-4eda-a694-340194580be4",
           "request": {
             "method": "GET",
             "header": [
@@ -362,21 +340,11 @@
             },
             "description": "Get current guest's profile (requires authentication)"
           },
-          "response": [],
-          "event": {
-            "script": {
-              "exec": [
-                "pm.test(\"Status code is 200\", function () {",
-                "  pm.response.to.have.status(200);",
-                "});"
-              ],
-              "type": "text/javascript"
-            },
-            "listen": "test"
-          }
+          "response": []
         },
         {
           "name": "Get My Bookings",
+          "id": "9ff6869d-22eb-40ad-8177-f63008a8bf0b",
           "request": {
             "method": "GET",
             "header": [
@@ -400,21 +368,11 @@
             },
             "description": "Get all bookings for the current guest (requires authentication)"
           },
-          "response": [],
-          "event": {
-            "script": {
-              "exec": [
-                "pm.test(\"Status code is 200\", function () {",
-                "  pm.response.to.have.status(200);",
-                "});"
-              ],
-              "type": "text/javascript"
-            },
-            "listen": "test"
-          }
+          "response": []
         },
         {
           "name": "Create Booking",
+          "id": "68da31c7-6035-4587-b37b-9979e5cd5aff",
           "request": {
             "method": "POST",
             "header": [
@@ -446,25 +404,11 @@
             },
             "description": "Create a new booking (requires authentication)"
           },
-          "response": [],
-          "event": {
-            "script": {
-              "exec": [
-                "pm.test(\"Status code is 201\", function () {",
-                "  pm.response.to.have.status(201);",
-                "});",
-                "var json = pm.response.json();",
-                "if (json && json.booking && json.booking.id) {",
-                "  pm.environment.set(\"bookingId\", json.booking.id);",
-                "}"
-              ],
-              "type": "text/javascript"
-            },
-            "listen": "test"
-          }
+          "response": []
         },
         {
           "name": "Pay Booking",
+          "id": "8b75d584-3282-47fc-bdaa-e6dc761f55a9",
           "request": {
             "method": "POST",
             "header": [
@@ -505,21 +449,11 @@
             },
             "description": "Pay for a booking (requires authentication)"
           },
-          "response": [],
-          "event": {
-            "script": {
-              "exec": [
-                "pm.test(\"Status code is 200\", function () {",
-                "  pm.response.to.have.status(200);",
-                "});"
-              ],
-              "type": "text/javascript"
-            },
-            "listen": "test"
-          }
+          "response": []
         },
         {
           "name": "Cancel Booking",
+          "id": "1011a366-163f-451a-a87a-1b4925262f5e",
           "request": {
             "method": "POST",
             "header": [
@@ -560,21 +494,11 @@
             },
             "description": "Cancel a booking (requires authentication)"
           },
-          "response": [],
-          "event": {
-            "script": {
-              "exec": [
-                "pm.test(\"Status code is 200\", function () {",
-                "  pm.response.to.have.status(200);",
-                "});"
-              ],
-              "type": "text/javascript"
-            },
-            "listen": "test"
-          }
+          "response": []
         },
         {
           "name": "Get Invoice",
+          "id": "08731fd0-7e5f-45f4-bcf7-23aff2f22589",
           "request": {
             "method": "GET",
             "header": [
@@ -607,20 +531,10 @@
             },
             "description": "Get invoice for a booking (requires authentication)"
           },
-          "response": [],
-          "event": {
-            "script": {
-              "exec": [
-                "pm.test(\"Status code is 200\", function () {",
-                "  pm.response.to.have.status(200);",
-                "});"
-              ],
-              "type": "text/javascript"
-            },
-            "listen": "test"
-          }
+          "response": []
         }
       ],
+      "id": "ebc9ba39-be18-434c-9166-a6d562410d98",
       "description": "Guest-specific endpoints (requires authentication)"
     },
     {
@@ -631,6 +545,7 @@
           "item": [
             {
               "name": "Create Hotel",
+              "id": "7f0742ba-bb0d-4249-9e22-52db6d5cb10d",
               "request": {
                 "method": "POST",
                 "header": [
@@ -662,21 +577,11 @@
                 },
                 "description": "Create a new hotel (admin only)"
               },
-              "response": [],
-              "event": {
-                "script": {
-                  "exec": [
-                    "pm.test(\"Status code is 201\", function () {",
-                    "  pm.response.to.have.status(201);",
-                    "});"
-                  ],
-                  "type": "text/javascript"
-                },
-                "listen": "test"
-              }
+              "response": []
             },
             {
               "name": "List Hotels",
+              "id": "d2fa595c-5c7f-42f7-a4d4-e92cf1aa9082",
               "request": {
                 "method": "GET",
                 "header": [
@@ -707,21 +612,11 @@
                 },
                 "description": "List all hotels (admin only)"
               },
-              "response": [],
-              "event": {
-                "script": {
-                  "exec": [
-                    "pm.test(\"Status code is 200\", function () {",
-                    "  pm.response.to.have.status(200);",
-                    "});"
-                  ],
-                  "type": "text/javascript"
-                },
-                "listen": "test"
-              }
+              "response": []
             },
             {
               "name": "Update Hotel",
+              "id": "a6b695d9-6b3f-4ae3-ac33-25cbf77c15b7",
               "request": {
                 "method": "PUT",
                 "header": [
@@ -761,21 +656,11 @@
                 },
                 "description": "Update a hotel (admin only)"
               },
-              "response": [],
-              "event": {
-                "script": {
-                  "exec": [
-                    "pm.test(\"Status code is 200\", function () {",
-                    "  pm.response.to.have.status(200);",
-                    "});"
-                  ],
-                  "type": "text/javascript"
-                },
-                "listen": "test"
-              }
+              "response": []
             },
             {
               "name": "Delete Hotel",
+              "id": "4513a9bc-209f-48dd-9f91-aaa8e05cde2e",
               "request": {
                 "method": "DELETE",
                 "header": [
@@ -807,21 +692,11 @@
                 },
                 "description": "Delete a hotel (admin only)"
               },
-              "response": [],
-              "event": {
-                "script": {
-                  "exec": [
-                    "pm.test(\"Status code is 204\", function () {",
-                    "  pm.response.to.have.status(204);",
-                    "});"
-                  ],
-                  "type": "text/javascript"
-                },
-                "listen": "test"
-              }
+              "response": []
             },
             {
               "name": "Add Property Photo",
+              "id": "129bd47e-c191-46c7-9de8-c1e7160970cf",
               "request": {
                 "method": "POST",
                 "header": [
@@ -862,21 +737,11 @@
                 },
                 "description": "Add a photo to a hotel property (admin only)"
               },
-              "response": [],
-              "event": {
-                "script": {
-                  "exec": [
-                    "pm.test(\"Status code is 201\", function () {",
-                    "  pm.response.to.have.status(201);",
-                    "});"
-                  ],
-                  "type": "text/javascript"
-                },
-                "listen": "test"
-              }
+              "response": []
             },
             {
               "name": "List Property Photos",
+              "id": "4463b2b7-57ed-4a2e-8c72-0bedb70ccdbd",
               "request": {
                 "method": "GET",
                 "header": [
@@ -909,20 +774,10 @@
                 },
                 "description": "List all photos for a hotel property (admin only)"
               },
-              "response": [],
-              "event": {
-                "script": {
-                  "exec": [
-                    "pm.test(\"Status code is 200\", function () {",
-                    "  pm.response.to.have.status(200);",
-                    "});"
-                  ],
-                  "type": "text/javascript"
-                },
-                "listen": "test"
-              }
+              "response": []
             }
           ],
+          "id": "6e8808d4-8b78-4c22-ba9a-68a0f7987d2c",
           "description": "Admin hotel management endpoints"
         },
         {
@@ -930,6 +785,7 @@
           "item": [
             {
               "name": "Create Room Type",
+              "id": "b1e67488-aed4-44e7-95bf-b3acbd121133",
               "request": {
                 "method": "POST",
                 "header": [
@@ -961,21 +817,11 @@
                 },
                 "description": "Create a new room type (admin only)"
               },
-              "response": [],
-              "event": {
-                "script": {
-                  "exec": [
-                    "pm.test(\"Status code is 201\", function () {",
-                    "  pm.response.to.have.status(201);",
-                    "});"
-                  ],
-                  "type": "text/javascript"
-                },
-                "listen": "test"
-              }
+              "response": []
             },
             {
               "name": "List Room Types",
+              "id": "c9817949-8fb3-424e-9ab4-79d86fe492a5",
               "request": {
                 "method": "GET",
                 "header": [
@@ -1006,21 +852,11 @@
                 },
                 "description": "List all room types (admin only)"
               },
-              "response": [],
-              "event": {
-                "script": {
-                  "exec": [
-                    "pm.test(\"Status code is 200\", function () {",
-                    "  pm.response.to.have.status(200);",
-                    "});"
-                  ],
-                  "type": "text/javascript"
-                },
-                "listen": "test"
-              }
+              "response": []
             },
             {
               "name": "Update Room Type",
+              "id": "cef2dd6c-fd72-4f6e-9426-eaed56443e60",
               "request": {
                 "method": "PUT",
                 "header": [
@@ -1060,21 +896,11 @@
                 },
                 "description": "Update a room type (admin only)"
               },
-              "response": [],
-              "event": {
-                "script": {
-                  "exec": [
-                    "pm.test(\"Status code is 200\", function () {",
-                    "  pm.response.to.have.status(200);",
-                    "});"
-                  ],
-                  "type": "text/javascript"
-                },
-                "listen": "test"
-              }
+              "response": []
             },
             {
               "name": "Delete Room Type",
+              "id": "cf3707fa-773f-4fa8-8b50-1bc79241bfae",
               "request": {
                 "method": "DELETE",
                 "header": [
@@ -1106,20 +932,10 @@
                 },
                 "description": "Delete a room type (admin only)"
               },
-              "response": [],
-              "event": {
-                "script": {
-                  "exec": [
-                    "pm.test(\"Status code is 204\", function () {",
-                    "  pm.response.to.have.status(204);",
-                    "});"
-                  ],
-                  "type": "text/javascript"
-                },
-                "listen": "test"
-              }
+              "response": []
             }
           ],
+          "id": "0da3245c-7eba-48c9-b15d-733916036603",
           "description": "Admin room type management endpoints"
         },
         {
@@ -1127,6 +943,7 @@
           "item": [
             {
               "name": "Create Room",
+              "id": "ac8e62fb-3a06-4c77-86d6-988e345b006c",
               "request": {
                 "method": "POST",
                 "header": [
@@ -1158,21 +975,11 @@
                 },
                 "description": "Create a new room (admin only)"
               },
-              "response": [],
-              "event": {
-                "script": {
-                  "exec": [
-                    "pm.test(\"Status code is 201\", function () {",
-                    "  pm.response.to.have.status(201);",
-                    "});"
-                  ],
-                  "type": "text/javascript"
-                },
-                "listen": "test"
-              }
+              "response": []
             },
             {
               "name": "List Rooms",
+              "id": "dd1771d3-32d4-47b1-a825-667ac5602845",
               "request": {
                 "method": "GET",
                 "header": [
@@ -1208,21 +1015,11 @@
                 },
                 "description": "List all rooms (admin only)"
               },
-              "response": [],
-              "event": {
-                "script": {
-                  "exec": [
-                    "pm.test(\"Status code is 200\", function () {",
-                    "  pm.response.to.have.status(200);",
-                    "});"
-                  ],
-                  "type": "text/javascript"
-                },
-                "listen": "test"
-              }
+              "response": []
             },
             {
               "name": "Update Room",
+              "id": "25e51d25-9a1f-4243-8d2c-642e6b97fdaa",
               "request": {
                 "method": "PUT",
                 "header": [
@@ -1262,21 +1059,11 @@
                 },
                 "description": "Update a room (admin only)"
               },
-              "response": [],
-              "event": {
-                "script": {
-                  "exec": [
-                    "pm.test(\"Status code is 200\", function () {",
-                    "  pm.response.to.have.status(200);",
-                    "});"
-                  ],
-                  "type": "text/javascript"
-                },
-                "listen": "test"
-              }
+              "response": []
             },
             {
               "name": "Delete Room",
+              "id": "8d5ca1f2-f27d-492b-9db9-6e617724e6a9",
               "request": {
                 "method": "DELETE",
                 "header": [
@@ -1308,21 +1095,11 @@
                 },
                 "description": "Delete a room (admin only)"
               },
-              "response": [],
-              "event": {
-                "script": {
-                  "exec": [
-                    "pm.test(\"Status code is 204\", function () {",
-                    "  pm.response.to.have.status(204);",
-                    "});"
-                  ],
-                  "type": "text/javascript"
-                },
-                "listen": "test"
-              }
+              "response": []
             },
             {
               "name": "Set Room Rates",
+              "id": "bbc13461-92b8-40a0-8407-3658b1ea92bd",
               "request": {
                 "method": "POST",
                 "header": [
@@ -1363,21 +1140,11 @@
                 },
                 "description": "Set rates for a room on specific dates (admin only)"
               },
-              "response": [],
-              "event": {
-                "script": {
-                  "exec": [
-                    "pm.test(\"Status code is 200\", function () {",
-                    "  pm.response.to.have.status(200);",
-                    "});"
-                  ],
-                  "type": "text/javascript"
-                },
-                "listen": "test"
-              }
+              "response": []
             },
             {
               "name": "Get Room Rates",
+              "id": "81f40376-f470-45b8-83f4-bfc5d7bbc065",
               "request": {
                 "method": "GET",
                 "header": [
@@ -1422,20 +1189,10 @@
                 },
                 "description": "Get rates for a room (admin only)"
               },
-              "response": [],
-              "event": {
-                "script": {
-                  "exec": [
-                    "pm.test(\"Status code is 200\", function () {",
-                    "  pm.response.to.have.status(200);",
-                    "});"
-                  ],
-                  "type": "text/javascript"
-                },
-                "listen": "test"
-              }
+              "response": []
             }
           ],
+          "id": "06f7995b-037d-48d3-beec-57ac53440de4",
           "description": "Admin room management endpoints"
         },
         {
@@ -1443,6 +1200,7 @@
           "item": [
             {
               "name": "Add Room Photo",
+              "id": "f13f5579-c14a-45e7-912c-e43874a17f10",
               "request": {
                 "method": "POST",
                 "header": [
@@ -1491,21 +1249,11 @@
                 },
                 "description": "Add a photo to a room (admin only)"
               },
-              "response": [],
-              "event": {
-                "script": {
-                  "exec": [
-                    "pm.test(\"Status code is 201\", function () {",
-                    "  pm.response.to.have.status(201);",
-                    "});"
-                  ],
-                  "type": "text/javascript"
-                },
-                "listen": "test"
-              }
+              "response": []
             },
             {
               "name": "List Room Photos",
+              "id": "c04b976c-5c14-4a88-8e78-ad892efcfbd3",
               "request": {
                 "method": "GET",
                 "header": [
@@ -1541,21 +1289,11 @@
                 },
                 "description": "List photos for a room (admin only)"
               },
-              "response": [],
-              "event": {
-                "script": {
-                  "exec": [
-                    "pm.test(\"Status code is 200\", function () {",
-                    "  pm.response.to.have.status(200);",
-                    "});"
-                  ],
-                  "type": "text/javascript"
-                },
-                "listen": "test"
-              }
+              "response": []
             },
             {
               "name": "Delete Property Photo",
+              "id": "8cf18f3e-0d03-4e5f-b44a-b5e677ff27ac",
               "request": {
                 "method": "DELETE",
                 "header": [
@@ -1588,21 +1326,11 @@
                 },
                 "description": "Delete a property photo (admin only)"
               },
-              "response": [],
-              "event": {
-                "script": {
-                  "exec": [
-                    "pm.test(\"Status code is 204\", function () {",
-                    "  pm.response.to.have.status(204);",
-                    "});"
-                  ],
-                  "type": "text/javascript"
-                },
-                "listen": "test"
-              }
+              "response": []
             },
             {
               "name": "Delete Room Photo",
+              "id": "b07e16d0-eaba-4593-b85d-de38e5fc3675",
               "request": {
                 "method": "DELETE",
                 "header": [
@@ -1635,20 +1363,10 @@
                 },
                 "description": "Delete a room photo (admin only)"
               },
-              "response": [],
-              "event": {
-                "script": {
-                  "exec": [
-                    "pm.test(\"Status code is 204\", function () {",
-                    "  pm.response.to.have.status(204);",
-                    "});"
-                  ],
-                  "type": "text/javascript"
-                },
-                "listen": "test"
-              }
+              "response": []
             }
           ],
+          "id": "3a45784f-f310-4a66-9daa-983a236d8d2b",
           "description": "Admin photo management endpoints"
         },
         {
@@ -1656,6 +1374,7 @@
           "item": [
             {
               "name": "Create Admin",
+              "id": "a53c4314-92ee-4fdb-becf-032cd59c8f53",
               "request": {
                 "method": "POST",
                 "header": [
@@ -1687,21 +1406,11 @@
                 },
                 "description": "Create a new admin user (admin only)"
               },
-              "response": [],
-              "event": {
-                "script": {
-                  "exec": [
-                    "pm.test(\"Status code is 201\", function () {",
-                    "  pm.response.to.have.status(201);",
-                    "});"
-                  ],
-                  "type": "text/javascript"
-                },
-                "listen": "test"
-              }
+              "response": []
             },
             {
               "name": "List Admins",
+              "id": "712fc0f0-fc99-4820-a368-444922af6e36",
               "request": {
                 "method": "GET",
                 "header": [
@@ -1732,21 +1441,11 @@
                 },
                 "description": "List all admin users (admin only)"
               },
-              "response": [],
-              "event": {
-                "script": {
-                  "exec": [
-                    "pm.test(\"Status code is 200\", function () {",
-                    "  pm.response.to.have.status(200);",
-                    "});"
-                  ],
-                  "type": "text/javascript"
-                },
-                "listen": "test"
-              }
+              "response": []
             },
             {
               "name": "Update Admin",
+              "id": "b4fe3be6-63d1-4fb9-9493-c4128b1e5f12",
               "request": {
                 "method": "PUT",
                 "header": [
@@ -1786,21 +1485,11 @@
                 },
                 "description": "Update an admin user (admin only)"
               },
-              "response": [],
-              "event": {
-                "script": {
-                  "exec": [
-                    "pm.test(\"Status code is 200\", function () {",
-                    "  pm.response.to.have.status(200);",
-                    "});"
-                  ],
-                  "type": "text/javascript"
-                },
-                "listen": "test"
-              }
+              "response": []
             },
             {
               "name": "Activate Admin",
+              "id": "fb7bb85d-292f-4899-9826-45327595fb3b",
               "request": {
                 "method": "POST",
                 "header": [
@@ -1833,21 +1522,11 @@
                 },
                 "description": "Activate an admin user (admin only)"
               },
-              "response": [],
-              "event": {
-                "script": {
-                  "exec": [
-                    "pm.test(\"Status code is 200\", function () {",
-                    "  pm.response.to.have.status(200);",
-                    "});"
-                  ],
-                  "type": "text/javascript"
-                },
-                "listen": "test"
-              }
+              "response": []
             },
             {
               "name": "Deactivate Admin",
+              "id": "09637900-07a4-4727-b77c-199a0389282b",
               "request": {
                 "method": "POST",
                 "header": [
@@ -1880,20 +1559,10 @@
                 },
                 "description": "Deactivate an admin user (admin only)"
               },
-              "response": [],
-              "event": {
-                "script": {
-                  "exec": [
-                    "pm.test(\"Status code is 200\", function () {",
-                    "  pm.response.to.have.status(200);",
-                    "});"
-                  ],
-                  "type": "text/javascript"
-                },
-                "listen": "test"
-              }
+              "response": []
             }
           ],
+          "id": "874b25c0-1595-4ef2-a430-019986718a6d",
           "description": "Admin user management endpoints"
         },
         {
@@ -1901,6 +1570,7 @@
           "item": [
             {
               "name": "List Bookings",
+              "id": "4862e2eb-57ed-4ff0-b9e4-448abb262830",
               "request": {
                 "method": "GET",
                 "header": [
@@ -1946,21 +1616,11 @@
                 },
                 "description": "List all bookings (admin only)"
               },
-              "response": [],
-              "event": {
-                "script": {
-                  "exec": [
-                    "pm.test(\"Status code is 200\", function () {",
-                    "  pm.response.to.have.status(200);",
-                    "});"
-                  ],
-                  "type": "text/javascript"
-                },
-                "listen": "test"
-              }
+              "response": []
             },
             {
               "name": "Update Booking Status",
+              "id": "324e4150-7b51-428a-998e-0d48efce1803",
               "request": {
                 "method": "PUT",
                 "header": [
@@ -2001,20 +1661,10 @@
                 },
                 "description": "Update booking status (admin only)"
               },
-              "response": [],
-              "event": {
-                "script": {
-                  "exec": [
-                    "pm.test(\"Status code is 200\", function () {",
-                    "  pm.response.to.have.status(200);",
-                    "});"
-                  ],
-                  "type": "text/javascript"
-                },
-                "listen": "test"
-              }
+              "response": []
             }
           ],
+          "id": "b2bec497-0359-4aff-8c94-914196b26445",
           "description": "Admin booking oversight endpoints"
         },
         {
@@ -2022,6 +1672,7 @@
           "item": [
             {
               "name": "Get Summary Report",
+              "id": "d58602c3-f56b-4274-b993-a024eaeb1ed3",
               "request": {
                 "method": "GET",
                 "header": [
@@ -2058,38 +1709,32 @@
                 },
                 "description": "Get summary report for a date range (admin only)"
               },
-              "response": [],
-              "event": {
-                "script": {
-                  "exec": [
-                    "pm.test(\"Status code is 200\", function () {",
-                    "  pm.response.to.have.status(200);",
-                    "});"
-                  ],
-                  "type": "text/javascript"
-                },
-                "listen": "test"
-              }
+              "response": []
             }
           ],
+          "id": "2acb02e9-68a7-4be8-9cf5-b604f84ef1d1",
           "description": "Admin reporting endpoints"
         }
       ],
+      "id": "3d455962-2d9a-4230-a195-6c40e901fb1c",
       "description": "Admin-only endpoints (requires admin authentication)"
     }
   ],
   "variable": [
     {
+      "id": "b998232d-5907-4c09-bbb8-4d01e92ab71e",
       "key": "baseUrl",
       "value": "http://localhost:8080",
       "type": "string"
     },
     {
+      "id": "a81ce26f-792e-4ade-9525-3ca79c6e21b6",
       "key": "token",
       "value": "",
       "type": "string"
     },
     {
+      "id": "ef88625e-708e-4d4d-abdc-d04ddf4b2276",
       "key": "adminToken",
       "value": "",
       "type": "string"

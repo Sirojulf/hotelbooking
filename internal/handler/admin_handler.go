@@ -41,7 +41,7 @@ func NewAdminHandler(profileSvc service.ProfileService, resSvc service.Reservati
 // @Accept json
 // @Produce json
 // @Param payload body AdminLoginRequest true "Login credentials"
-// @Success 200 {object} service.ProfileLoginResponse
+// @Success 200 {object} handler.AdminLoginResponseDoc
 // @Failure 400 {object} map[string]string
 // @Failure 401 {object} map[string]string
 // @Router /auth/admin/login [post]

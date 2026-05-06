@@ -20,13 +20,14 @@ type CreateHotelInput struct {
 }
 
 type UpdateHotelInput struct {
-	Name         string `json:"name"`
-	Address      string `json:"address"`
-	Status       string `json:"status"`
-	Code         string `json:"code"`
-	ImageURL     string `json:"image_url"`
-	CheckInTime  string `json:"check_in_time"`
-	CheckOutTime string `json:"check_out_time"`
+	Name         string          `json:"name"`
+	Address      string          `json:"address"`
+	Status       string          `json:"status"`
+	Code         string          `json:"code"`
+	ImageURL     string          `json:"image_url"`
+	CheckInTime  string          `json:"check_in_time"`
+	CheckOutTime string          `json:"check_out_time"`
+	Settings     json.RawMessage `json:"settings"`
 }
 
 type CreateRoomTypeInput struct {
@@ -146,6 +147,7 @@ func (s *inventoryService) UpdateHotel(id string, input UpdateHotelInput) (*mode
 		ImageURL:     input.ImageURL,
 		CheckInTime:  input.CheckInTime,
 		CheckOutTime: input.CheckOutTime,
+		Settings:     input.Settings,
 	})
 }
 

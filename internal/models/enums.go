@@ -26,6 +26,7 @@ const (
 	GuestTierSilver   GuestTier = "silver"
 	GuestTierGold     GuestTier = "gold"
 	GuestTierPlatinum GuestTier = "platinum"
+	GuestTierDiamond  GuestTier = "diamond"
 )
 
 type BookingSource string
