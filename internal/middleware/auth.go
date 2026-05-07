@@ -34,7 +34,7 @@ func AuthMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
 		}
 
 		// 4. Simpan informasi pengguna di konteks untuk digunakan di handler
-		c.Set("user", user)
+		c.Set("user", &user.User)
 
 		// 5. Jika valid, lanjutkan ke handler berikutnya
 		return next(c)

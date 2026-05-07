@@ -1,0 +1,45 @@
+$kind: http-example
+request:
+  url: "{{baseUrl}}/hotels?q=string"
+  method: GET
+  headers:
+    Accept: application/json
+  queryParams:
+    - key: q
+      value: string
+      description: Search query (name/address)
+response:
+  statusCode: 200
+  statusText: OK
+  headers:
+    Content-Type: application/json
+  body:
+    type: json
+    content: |-
+      [
+        {
+          "address": "string",
+          "check_in_time": "string",
+          "check_out_time": "string",
+          "code": "string",
+          "created_at": "string",
+          "id": "string",
+          "image_url": "string",
+          "name": "string",
+          "settings": {},
+          "status": "string"
+        },
+        {
+          "address": "string",
+          "check_in_time": "string",
+          "check_out_time": "string",
+          "code": "string",
+          "created_at": "string",
+          "id": "string",
+          "image_url": "string",
+          "name": "string",
+          "settings": {},
+          "status": "string"
+        }
+      ]
+order: 1000

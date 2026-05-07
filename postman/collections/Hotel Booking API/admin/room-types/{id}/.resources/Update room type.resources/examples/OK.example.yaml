@@ -1,0 +1,59 @@
+$kind: http-example
+request:
+  url: "{{baseUrl}}/admin/room-types/:id"
+  method: PUT
+  headers:
+    - key: Content-Type
+      value: application/json
+    - key: Accept
+      value: "*/*"
+    - key: Authorization
+      value: <API Key>
+      description: "Added as a part of security scheme: apikey"
+  pathVariables:
+    - key: id
+      value: string
+      description: Room Type ID
+  body:
+    type: json
+    content: |-
+      {
+        "amenities": {},
+        "bed_count": 8173,
+        "bed_type": "string",
+        "capacity": 383,
+        "description": "string",
+        "images": {},
+        "name": "string",
+        "price_per_night": 7862.007745368706,
+        "size_sqm": 6892.230986834842,
+        "smoking_allowed": true,
+        "view_type": "string"
+      }
+response:
+  statusCode: 200
+  statusText: OK
+  headers:
+    Content-Type: "*/*"
+  body:
+    type: text
+    content: |-
+      {
+        "amenities": {},
+        "base_price": 8879.075221638253,
+        "bed_count": 2734,
+        "bed_type": "string",
+        "capacity": 9084,
+        "created_at": "string",
+        "description": "string",
+        "hotel_id": "string",
+        "id": "string",
+        "images": {},
+        "name": "string",
+        "price_per_night": 5003.868580947036,
+        "size_sqm": 6431.841202915591,
+        "smoking_allowed": false,
+        "updated_at": "string",
+        "view_type": "string"
+      }
+order: 1000

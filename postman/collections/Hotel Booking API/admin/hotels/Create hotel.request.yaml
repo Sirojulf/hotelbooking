@@ -1,0 +1,25 @@
+$kind: http-request
+url: "{{baseUrl}}/admin/hotels"
+method: POST
+headers:
+  Content-Type: application/json
+  Accept: application/json
+body:
+  type: json
+  content: |-
+    {
+      "address": "string",
+      "check_in_time": "string",
+      "check_out_time": "string",
+      "code": "string",
+      "image_url": "string",
+      "name": "string"
+    }
+auth:
+  type: apikey
+  credentials:
+    key: Authorization
+    value: "{{apiKey}}"
+    in: header
+examples: ./.resources/Create hotel.resources/examples
+order: 3000

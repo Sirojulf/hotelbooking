@@ -1,57 +1,61 @@
 /**
- * Booking flow untuk RoomMasterb (Next.js / Node.js REST API)
- *
- * CARA PAKAI:
- * 1. Clone RoomMasterb: git clone https://github.com/Sirojulf/RoomMasterb.git
- * 2. Jalankan server RoomMasterb (lihat README-nya)
- * 3. Sesuaikan ROOMMASTER.baseURL di config.js
- * 4. Cari endpoint login dan reservation di source code RoomMasterb
- * 5. Update bagian "TODO" di bawah sesuai endpoint yang ada
- *
- * Asumsi awal: Next.js dengan API routes di /api/...
- * Sesuaikan path jika berbeda.
+ * Booking flow untuk RoomMasterb (Node.js REST API)
+ * Flow: cek availability → buat reservasi → cancel
+ * Token login di-cache via setup() agar tidak rate-limited.
  */
 
 import http from 'k6/http';
 import { check, group } from 'k6';
 import { ROOMMASTER, getCheckInOut, pickRoom } from '../config.js';
 
-const BASE = ROOMMASTER.baseURL;
+const BASE   = ROOMMASTER.baseURL;
 const JSON_H = { 'Content-Type': 'application/json' };
-const authH = (token) => ({ ...JSON_H, Authorization: `Bearer ${token}` });
+const authH  = (token) => ({ ...JSON_H, Authorization: `Bearer ${token}` });
 
 /**
- * Full booking flow untuk RoomMasterb.
- * Sesuaikan endpoint dan payload setelah kamu inspect API-nya.
+ * Login sekali sebelum semua VU mulai.
+ * Hasilnya dikirim ke setiap VU melalui parameter fungsi default.
  */
-export function runBookingFlow() {
-  const vuId = __VU - 1;
-  const roomId = pickRoom(ROOMMASTER.roomIds, vuId);
-  const { checkIn, checkOut } = getCheckInOut(vuId);
-  const start = Date.now();
+export function setup() {
+  const res = http.post(
+    `${BASE}/auth/login`,
+    JSON.stringify({ email: ROOMMASTER.email, password: ROOMMASTER.password }),
+    { headers: JSON_H },
+  );
+  if (res.status !== 200) {
+    console.error(`[setup] Login gagal: ${res.status} - ${res.body}`);
+    return { token: null };
+  }
+  const token = res.json('access_token');
+  if (!token) {
+    console.error('[setup] access_token tidak ditemukan di response');
+    return { token: null };
+  }
+  console.log('[setup] Login berhasil, token siap dipakai semua VU');
+  return { token };
+}
 
-  let token = null;
+/**
+ * Jalankan full booking flow (tanpa login ulang).
+ * @param {string} token  - JWT dari setup()
+ * @returns {{ success: boolean, durationMs: number }}
+ */
+export function runBookingFlow(token) {
+  const vuId   = __VU - 1;
+  const iter   = __ITER;
+  const roomId = pickRoom(ROOMMASTER.roomIds, vuId);
+  const { checkIn, checkOut } = getCheckInOut(vuId, iter);
+  const start  = Date.now();
+
+  if (!token) {
+    console.error(`VU${__VU} iter${iter}: token null, skip`);
+    return { success: false, durationMs: 0 };
+  }
+
   let reservationId = null;
   let success = false;
 
-  // 1. Login
-  // TODO: sesuaikan path dan field login RoomMasterb
-  group('login', () => {
-    const res = http.post(
-      `${BASE}/auth/login`,           // ganti jika endpoint berbeda
-      JSON.stringify({ email: ROOMMASTER.email, password: ROOMMASTER.password }),
-      { headers: JSON_H },
-    );
-    if (check(res, { 'login 200': (r) => r.status === 200 })) {
-      // TODO: sesuaikan field token (mungkin 'token', 'access_token', atau 'data.token')
-      token = res.json('token') || res.json('access_token') || res.json('data.token');
-    }
-  });
-
-  if (!token) return { success: false, durationMs: Date.now() - start };
-
-  // 2. Cek ketersediaan
-  // TODO: sesuaikan endpoint availability RoomMasterb
+  // 1. Cek ketersediaan
   group('check_availability', () => {
     const res = http.get(
       `${BASE}/rooms/${roomId}/availability?check_in=${checkIn}&check_out=${checkOut}`,
@@ -60,29 +64,26 @@ export function runBookingFlow() {
     check(res, { 'availability 200': (r) => r.status === 200 });
   });
 
-  // 3. Buat reservasi
-  // TODO: sesuaikan endpoint dan field reservasi RoomMasterb
+  // 2. Buat reservasi
   group('create_reservation', () => {
     const res = http.post(
-      `${BASE}/reservations`,         // ganti jika endpoint berbeda
+      `${BASE}/reservations`,
       JSON.stringify({
-        room_id: roomId,
-        check_in_date: checkIn,       // ganti nama field jika berbeda
-        check_out_date: checkOut,
+        room_id:          roomId,
+        check_in:         checkIn,
+        check_out:        checkOut,
         special_requests: 'k6 test',
       }),
       { headers: authH(token) },
     );
     if (check(res, { 'reservation 201': (r) => r.status === 201 || r.status === 200 })) {
-      // TODO: sesuaikan field id reservasi
-      reservationId = res.json('id') || res.json('data.id') || res.json('reservation.id');
+      reservationId = res.json('reservation.id');
     }
   });
 
   if (!reservationId) return { success: false, durationMs: Date.now() - start };
 
-  // 4. Cancel reservasi (cleanup)
-  // TODO: sesuaikan endpoint cancel RoomMasterb
+  // 3. Cancel — bebaskan slot untuk iterasi berikutnya
   group('cancel_reservation', () => {
     const res = http.post(
       `${BASE}/reservations/${reservationId}/cancel`,
@@ -97,12 +98,13 @@ export function runBookingFlow() {
   return { success, durationMs: Date.now() - start };
 }
 
-/**
- * Simple read-only flow.
- * TODO: sesuaikan endpoint list hotel/room RoomMasterb
- */
+// Entry point untuk k6 run langsung (quick test)
+export default function (data) {
+  runBookingFlow(data ? data.token : null);
+}
+
 export function runReadFlow() {
-  const res = http.get(`${BASE}/hotels`);  // ganti jika berbeda
-  const ok = check(res, { 'hotels 200': (r) => r.status === 200 });
+  const res = http.get(`${BASE}/hotels`);
+  const ok  = check(res, { 'hotels 200': (r) => r.status === 200 });
   return { success: ok, durationMs: res.timings.duration };
 }

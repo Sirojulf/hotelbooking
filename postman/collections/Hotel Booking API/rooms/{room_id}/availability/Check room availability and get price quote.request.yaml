@@ -1,0 +1,18 @@
+$kind: http-request
+url: "{{baseUrl}}/rooms/:room_id/availability?check_in=string&check_out=string"
+method: GET
+headers:
+  Accept: application/json
+queryParams:
+  - key: check_in
+    value: string
+    description: Check-in date (YYYY-MM-DD)
+  - key: check_out
+    value: string
+    description: Check-out date (YYYY-MM-DD)
+pathVariables:
+  - key: room_id
+    value: string
+    description: Room ID
+examples: ./.resources/Check room availability and get price quote.resources/examples
+order: 1000

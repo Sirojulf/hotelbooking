@@ -1,0 +1,71 @@
+$kind: http-example
+request:
+  url: "{{baseUrl}}/hotels/:id"
+  method: GET
+  headers:
+    Accept: application/json
+  pathVariables:
+    - key: id
+      value: string
+      description: Hotel ID
+response:
+  statusCode: 200
+  statusText: OK
+  headers:
+    Content-Type: application/json
+  body:
+    type: json
+    content: |-
+      {
+        "hotel": {
+          "address": "string",
+          "check_in_time": "string",
+          "check_out_time": "string",
+          "code": "string",
+          "created_at": "string",
+          "id": "string",
+          "image_url": "string",
+          "name": "string",
+          "settings": {},
+          "status": "string"
+        },
+        "room_types": [
+          {
+            "amenities": {},
+            "base_price": 2185.211153956059,
+            "bed_count": 2482,
+            "bed_type": "string",
+            "capacity": 4041,
+            "created_at": "string",
+            "description": "string",
+            "hotel_id": "string",
+            "id": "string",
+            "images": {},
+            "name": "string",
+            "price_per_night": 3643.9856231619083,
+            "size_sqm": 6702.178046755806,
+            "smoking_allowed": true,
+            "updated_at": "string",
+            "view_type": "string"
+          },
+          {
+            "amenities": {},
+            "base_price": 9783.066297721329,
+            "bed_count": 4252,
+            "bed_type": "string",
+            "capacity": 2623,
+            "created_at": "string",
+            "description": "string",
+            "hotel_id": "string",
+            "id": "string",
+            "images": {},
+            "name": "string",
+            "price_per_night": 1221.425897405347,
+            "size_sqm": 6328.940859064976,
+            "smoking_allowed": true,
+            "updated_at": "string",
+            "view_type": "string"
+          }
+        ]
+      }
+order: 1000

@@ -1,0 +1,30 @@
+$kind: http-request
+url: "{{baseUrl}}/admin/rooms/:id"
+method: PUT
+headers:
+  Content-Type: application/json
+  Accept: "*/*"
+pathVariables:
+  - key: id
+    value: string
+    description: Room ID
+body:
+  type: json
+  content: |-
+    {
+      "cleaning_status": "pickup",
+      "floor_number": 109,
+      "furniture_condition": "string",
+      "room_number": "string",
+      "special_notes": "string",
+      "status": "occupied",
+      "wing": "string"
+    }
+auth:
+  type: apikey
+  credentials:
+    key: Authorization
+    value: "{{apiKey}}"
+    in: header
+examples: ./.resources/Update room.resources/examples
+order: 2000

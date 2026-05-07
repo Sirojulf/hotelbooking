@@ -1,0 +1,17 @@
+$kind: http-request
+url: "{{baseUrl}}/guests/reservations/:id/cancel"
+method: POST
+headers:
+  Accept: application/json
+pathVariables:
+  - key: id
+    value: string
+    description: Reservation ID
+auth:
+  type: apikey
+  credentials:
+    key: Authorization
+    value: "{{apiKey}}"
+    in: header
+examples: ./.resources/Cancel reservation.resources/examples
+order: 1000

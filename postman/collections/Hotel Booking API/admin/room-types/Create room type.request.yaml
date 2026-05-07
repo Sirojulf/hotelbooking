@@ -1,0 +1,31 @@
+$kind: http-request
+url: "{{baseUrl}}/admin/room-types"
+method: POST
+headers:
+  Content-Type: application/json
+  Accept: application/json
+body:
+  type: json
+  content: |-
+    {
+      "amenities": {},
+      "bed_count": 1200,
+      "bed_type": "string",
+      "capacity": 2658,
+      "description": "string",
+      "hotel_id": "string",
+      "images": {},
+      "name": "string",
+      "price_per_night": 2173.5973937431177,
+      "size_sqm": 5871.347810731584,
+      "smoking_allowed": false,
+      "view_type": "string"
+    }
+auth:
+  type: apikey
+  credentials:
+    key: Authorization
+    value: "{{apiKey}}"
+    in: header
+examples: ./.resources/Create room type.resources/examples
+order: 3000

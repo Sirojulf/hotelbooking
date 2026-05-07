@@ -1,0 +1,17 @@
+$kind: http-request
+url: "{{baseUrl}}/admin/users?hotel_id=string"
+method: GET
+headers:
+  Accept: application/json
+queryParams:
+  - key: hotel_id
+    value: string
+    description: Hotel ID
+auth:
+  type: apikey
+  credentials:
+    key: Authorization
+    value: "{{apiKey}}"
+    in: header
+examples: ./.resources/List staff profiles.resources/examples
+order: 2000

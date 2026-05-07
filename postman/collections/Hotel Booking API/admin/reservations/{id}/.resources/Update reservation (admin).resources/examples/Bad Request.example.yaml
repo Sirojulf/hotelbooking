@@ -1,0 +1,38 @@
+$kind: http-example
+request:
+  url: "{{baseUrl}}/admin/reservations/:id"
+  method: PUT
+  headers:
+    - key: Content-Type
+      value: application/json
+    - key: Accept
+      value: application/json
+    - key: Authorization
+      value: <API Key>
+      description: "Added as a part of security scheme: apikey"
+  pathVariables:
+    - key: id
+      value: string
+      description: Reservation ID
+  body:
+    type: json
+    content: |-
+      {
+        "ai_notes": "string",
+        "checked_in_at": "string",
+        "checked_out_at": "string",
+        "payment_status": "string"
+      }
+response:
+  statusCode: 400
+  statusText: Bad Request
+  headers:
+    Content-Type: application/json
+  body:
+    type: json
+    content: |-
+      {
+        "key_0": "string",
+        "key_1": "string"
+      }
+order: 2000

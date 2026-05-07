@@ -1,0 +1,24 @@
+$kind: http-request
+url: "{{baseUrl}}/guests/reservations/:id/pay"
+method: POST
+headers:
+  Content-Type: application/json
+  Accept: application/json
+pathVariables:
+  - key: id
+    value: string
+    description: Reservation ID
+body:
+  type: json
+  content: |-
+    {
+      "payment_method": "string"
+    }
+auth:
+  type: apikey
+  credentials:
+    key: Authorization
+    value: "{{apiKey}}"
+    in: header
+examples: ./.resources/Pay reservation.resources/examples
+order: 1000

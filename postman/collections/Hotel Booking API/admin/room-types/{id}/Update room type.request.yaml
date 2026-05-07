@@ -1,0 +1,34 @@
+$kind: http-request
+url: "{{baseUrl}}/admin/room-types/:id"
+method: PUT
+headers:
+  Content-Type: application/json
+  Accept: "*/*"
+pathVariables:
+  - key: id
+    value: string
+    description: Room Type ID
+body:
+  type: json
+  content: |-
+    {
+      "amenities": {},
+      "bed_count": 8173,
+      "bed_type": "string",
+      "capacity": 383,
+      "description": "string",
+      "images": {},
+      "name": "string",
+      "price_per_night": 7862.007745368706,
+      "size_sqm": 6892.230986834842,
+      "smoking_allowed": true,
+      "view_type": "string"
+    }
+auth:
+  type: apikey
+  credentials:
+    key: Authorization
+    value: "{{apiKey}}"
+    in: header
+examples: ./.resources/Update room type.resources/examples
+order: 2000

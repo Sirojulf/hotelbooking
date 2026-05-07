@@ -1,0 +1,19 @@
+$kind: http-request
+description: Agentic AI memilihkan kamar terbaik berdasarkan preferensi tamu. Set AI_MOCK=true di .env untuk load testing skala besar.
+url: "{{baseUrl}}/ai/recommend"
+method: POST
+headers:
+  Content-Type: application/json
+  Accept: application/json
+body:
+  type: json
+  content: |-
+    {
+      "budget": 5887.233058458011,
+      "check_in": "string",
+      "check_out": "string",
+      "preferences": "string",
+      "query": "string"
+    }
+examples: ./.resources/Rekomendasi kamar berbasis AI.resources/examples
+order: 1000

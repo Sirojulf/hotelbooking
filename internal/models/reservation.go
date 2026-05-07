@@ -17,8 +17,8 @@ type Reservation struct {
 	HotelID         uuid.UUID         `json:"hotel_id"`
 	GuestID         uuid.UUID         `json:"guest_id"`
 	RoomID          uuid.UUID         `json:"room_id"`
-	CheckInDate     time.Time         `json:"check_in_date"`
-	CheckOutDate    time.Time         `json:"check_out_date"`
+	CheckInDate     Date              `json:"check_in_date"`
+	CheckOutDate    Date              `json:"check_out_date"`
 	TotalPrice      float64           `json:"total_price"`
 	PaymentStatus   PaymentStatus     `json:"payment_status"`
 	BookingSource   BookingSource     `json:"booking_source,omitempty"`

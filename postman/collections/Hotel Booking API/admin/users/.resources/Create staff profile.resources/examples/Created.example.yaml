@@ -1,0 +1,39 @@
+$kind: http-example
+request:
+  url: "{{baseUrl}}/admin/users"
+  method: POST
+  headers:
+    - key: Content-Type
+      value: application/json
+    - key: Accept
+      value: application/json
+    - key: Authorization
+      value: <API Key>
+      description: "Added as a part of security scheme: apikey"
+  body:
+    type: json
+    content: |-
+      {
+        "email": "string",
+        "full_name": "string",
+        "hotel_id": "string",
+        "password": "string",
+        "role": "string"
+      }
+response:
+  statusCode: 201
+  statusText: Created
+  headers:
+    Content-Type: application/json
+  body:
+    type: json
+    content: |-
+      {
+        "created_at": "string",
+        "email": "string",
+        "full_name": "string",
+        "hotel_id": "string",
+        "id": "string",
+        "role": "string"
+      }
+order: 1000

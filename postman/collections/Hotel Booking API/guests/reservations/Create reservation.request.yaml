@@ -1,0 +1,70 @@
+$kind: http-request
+name: Create reservation
+url: http://localhost:8080/api/v1/guests/reservations
+method: POST
+headers:
+  Content-Type: application/json
+  Accept: application/json
+body:
+  type: json
+  content: |-
+    {
+      "hotel_id": "a0000000-0000-0000-0000-000000000001",
+      "room_id": "a0000000-0000-0000-0000-000000000200",
+      "check_in": "2026-08-15",
+      "check_out": "2026-08-17",
+      "booking_source": "online",
+      "payment_method": "transfer",
+      "special_requests": "Test booking dari Postman"
+    }
+auth:
+  type: bearer
+  credentials:
+    token: "{{token}}"
+scripts:
+  - type: afterResponse
+    code: "const token = pm.environment.get('token');\r
+
+      \r
+
+      if (!token) {\r
+
+      \    console.error('❌ TOKEN KOSONG! Login dulu, atau cek environment yang aktif');\r
+
+      } else if (token.length < 100) {\r
+
+      \    console.error('⚠️ Token aneh (terlalu pendek):', token);\r
+
+      } else {\r
+
+      \    // Decode JWT untuk cek expiry\r
+
+      \    const payload = JSON.parse(atob(token.split('.')[1]));\r
+
+      \    const now = Math.floor(Date.now() / 1000);\r
+
+      \    const expiresIn = payload.exp - now;\r
+
+      \    \r
+
+      \    if (expiresIn < 0) {\r
+
+      \        console.error(`❌ TOKEN EXPIRED ${-expiresIn} detik yang lalu — login ulang!`);\r
+
+      \    } else {\r
+
+      \        console.log(`✅ Token valid, expires dalam ${Math.floor(expiresIn/60)} menit`);\r
+
+      \        console.log('Email:', payload.email);\r
+
+      \        console.log('User ID:', payload.sub);\r
+
+      \    }\r
+
+      }"
+    language: text/javascript
+settings:
+  disabledSystemHeaders:
+    - content-type
+examples: ./.resources/Create reservation.resources/examples
+order: 3000

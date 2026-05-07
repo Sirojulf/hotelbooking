@@ -1,0 +1,30 @@
+$kind: http-example
+request:
+  url: "{{baseUrl}}/rooms/:room_id/availability?check_in=string&check_out=string"
+  method: GET
+  headers:
+    Accept: application/json
+  queryParams:
+    - key: check_in
+      value: string
+      description: Check-in date (YYYY-MM-DD)
+    - key: check_out
+      value: string
+      description: Check-out date (YYYY-MM-DD)
+  pathVariables:
+    - key: room_id
+      value: string
+      description: Room ID
+response:
+  statusCode: 400
+  statusText: Bad Request
+  headers:
+    Content-Type: application/json
+  body:
+    type: json
+    content: |-
+      {
+        "key_0": "string",
+        "key_1": "string"
+      }
+order: 2000

@@ -1,0 +1,20 @@
+$kind: http-request
+url: "{{baseUrl}}/admin/rooms?hotel_id=string&room_type_id=string"
+method: GET
+headers:
+  Accept: application/json
+queryParams:
+  - key: hotel_id
+    value: string
+    description: Hotel ID
+  - key: room_type_id
+    value: string
+    description: Room Type ID
+auth:
+  type: apikey
+  credentials:
+    key: Authorization
+    value: "{{apiKey}}"
+    in: header
+examples: ./.resources/List rooms.resources/examples
+order: 2000

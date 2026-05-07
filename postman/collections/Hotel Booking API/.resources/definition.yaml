@@ -1,0 +1,4 @@
+$kind: collection
+description: REST API for hotel booking management (guest, booking, admin inventory, reports).
+variables:
+  baseUrl: /api/v1

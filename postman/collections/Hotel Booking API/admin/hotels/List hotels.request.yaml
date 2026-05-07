@@ -1,0 +1,17 @@
+$kind: http-request
+url: "{{baseUrl}}/admin/hotels?q=string"
+method: GET
+headers:
+  Accept: application/json
+queryParams:
+  - key: q
+    value: string
+    description: Search query
+auth:
+  type: apikey
+  credentials:
+    key: Authorization
+    value: "{{apiKey}}"
+    in: header
+examples: ./.resources/List hotels.resources/examples
+order: 2000

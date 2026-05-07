@@ -1,0 +1,64 @@
+$kind: http-example
+request:
+  url: "{{baseUrl}}/admin/rooms"
+  method: POST
+  headers:
+    - key: Content-Type
+      value: application/json
+    - key: Accept
+      value: application/json
+    - key: Authorization
+      value: <API Key>
+      description: "Added as a part of security scheme: apikey"
+  body:
+    type: json
+    content: |-
+      {
+        "floor_number": 5411,
+        "hotel_id": "string",
+        "room_number": "string",
+        "room_type_id": "string",
+        "wing": "string"
+      }
+response:
+  statusCode: 201
+  statusText: Created
+  headers:
+    Content-Type: application/json
+  body:
+    type: json
+    content: |-
+      {
+        "cleaning_status": "clean",
+        "created_at": "string",
+        "floor_number": 5849,
+        "furniture_condition": "string",
+        "hotel_id": "string",
+        "id": "string",
+        "last_renovation_date": "string",
+        "room_number": "string",
+        "room_type_detail": {
+          "amenities": {},
+          "base_price": 2627.6243839561284,
+          "bed_count": 1911,
+          "bed_type": "string",
+          "capacity": 3161,
+          "created_at": "string",
+          "description": "string",
+          "hotel_id": "string",
+          "id": "string",
+          "images": {},
+          "name": "string",
+          "price_per_night": 2578.335932736072,
+          "size_sqm": 9425.956116676884,
+          "smoking_allowed": true,
+          "updated_at": "string",
+          "view_type": "string"
+        },
+        "room_type_id": "string",
+        "special_notes": "string",
+        "status": "occupied",
+        "updated_at": "string",
+        "wing": "string"
+      }
+order: 1000

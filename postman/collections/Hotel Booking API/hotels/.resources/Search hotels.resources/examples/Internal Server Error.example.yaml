@@ -1,0 +1,23 @@
+$kind: http-example
+request:
+  url: "{{baseUrl}}/hotels?q=string"
+  method: GET
+  headers:
+    Accept: application/json
+  queryParams:
+    - key: q
+      value: string
+      description: Search query (name/address)
+response:
+  statusCode: 500
+  statusText: Internal Server Error
+  headers:
+    Content-Type: application/json
+  body:
+    type: json
+    content: |-
+      {
+        "key_0": "string",
+        "key_1": "string"
+      }
+order: 2000

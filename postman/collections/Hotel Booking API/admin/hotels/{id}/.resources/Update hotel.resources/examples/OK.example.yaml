@@ -1,0 +1,50 @@
+$kind: http-example
+request:
+  url: "{{baseUrl}}/admin/hotels/:id"
+  method: PUT
+  headers:
+    - key: Content-Type
+      value: application/json
+    - key: Accept
+      value: "*/*"
+    - key: Authorization
+      value: <API Key>
+      description: "Added as a part of security scheme: apikey"
+  pathVariables:
+    - key: id
+      value: string
+      description: Hotel ID
+  body:
+    type: json
+    content: |-
+      {
+        "address": "string",
+        "check_in_time": "string",
+        "check_out_time": "string",
+        "code": "string",
+        "image_url": "string",
+        "name": "string",
+        "settings": {},
+        "status": "string"
+      }
+response:
+  statusCode: 200
+  statusText: OK
+  headers:
+    Content-Type: "*/*"
+  body:
+    type: text
+    content: |-
+      {
+        "address": "string",
+        "check_in_time": "string",
+        "check_out_time": "string",
+        "code": "string",
+        "created_at": "string",
+        "id": "string",
+        "image_url": "string",
+        "name": "string",
+        "settings": {},
+        "status": "string"
+      }
+order: 1000

@@ -1,0 +1,19 @@
+$kind: http-request
+url: "{{baseUrl}}/auth/guest/register"
+method: POST
+headers:
+  Content-Type: application/json
+  Accept: application/json
+body:
+  type: json
+  content: |-
+    {
+      "email": "string",
+      "full_name": "string",
+      "hotel_id": "string",
+      "password": "string",
+      "phone_number": "string",
+      "title": "string"
+    }
+examples: ./.resources/Register guest.resources/examples
+order: 1000

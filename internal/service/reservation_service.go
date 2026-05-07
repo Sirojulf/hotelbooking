@@ -12,6 +12,7 @@ import (
 )
 
 type ReservationQuote struct {
+	room          *models.Room
 	Available     bool    `json:"available"`
 	Nights        int     `json:"nights"`
 	TotalPrice    float64 `json:"total_price"`
@@ -98,6 +99,7 @@ func (s *reservationService) QuoteReservation(roomID string, checkIn, checkOut t
 	}
 
 	return &ReservationQuote{
+		room:          room,
 		Available:     available,
 		Nights:        nights,
 		TotalPrice:    pricePerNight * float64(nights),
@@ -115,10 +117,7 @@ func (s *reservationService) CreateReservation(input CreateReservationInput) (*R
 		return nil, fmt.Errorf("kamar tidak tersedia pada tanggal tersebut")
 	}
 
-	room, err := s.hotelRepo.GetRoomByID(input.RoomID)
-	if err != nil {
-		return nil, err
-	}
+	room := quote.room
 	if input.HotelID != "" && room.HotelID.String() != input.HotelID {
 		return nil, fmt.Errorf("hotel_id tidak sesuai dengan kamar")
 	}
@@ -137,8 +136,8 @@ func (s *reservationService) CreateReservation(input CreateReservationInput) (*R
 		HotelID:         room.HotelID,
 		GuestID:         guestUUID,
 		RoomID:          roomUUID,
-		CheckInDate:     input.CheckIn,
-		CheckOutDate:    input.CheckOut,
+		CheckInDate:     models.NewDate(input.CheckIn),
+		CheckOutDate:    models.NewDate(input.CheckOut),
 		TotalPrice:      quote.TotalPrice,
 		PaymentStatus:   models.PaymentStatusPending,
 		BookingSource:   models.BookingSource(input.BookingSource),
@@ -332,7 +331,7 @@ func calcRefund(res *models.Reservation, now time.Time) float64 {
 	if res == nil {
 		return 0
 	}
-	if now.After(res.CheckInDate) {
+	if now.After(res.CheckInDate.Time) {
 		return 0
 	}
 	cutoff := res.CheckInDate.Add(-24 * time.Hour)

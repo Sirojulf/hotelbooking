@@ -1,0 +1,27 @@
+$kind: http-request
+url: "{{baseUrl}}/admin/reservations/:id"
+method: PUT
+headers:
+  Content-Type: application/json
+  Accept: application/json
+pathVariables:
+  - key: id
+    value: string
+    description: Reservation ID
+body:
+  type: json
+  content: |-
+    {
+      "ai_notes": "string",
+      "checked_in_at": "string",
+      "checked_out_at": "string",
+      "payment_status": "string"
+    }
+auth:
+  type: apikey
+  credentials:
+    key: Authorization
+    value: "{{apiKey}}"
+    in: header
+examples: ./.resources/Update reservation (admin).resources/examples
+order: 1000

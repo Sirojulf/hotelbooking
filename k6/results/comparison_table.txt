@@ -1,0 +1,67 @@
+
+==========================================================================================
+  TABEL PERBANDINGAN KINERJA: hotelbooking (Go) vs RoomMasterb (Node.js)
+==========================================================================================
+
+  [ LOAD TESTING ]
+  ------------------------------------------------------------------------------------------
+  Metrik                              Go (hotelbooking)  Node.js (RoomMasterb)
+  ------------------------------------------------------------------------------------------
+  Total HTTP Requests                              4720                   6589
+  Req / detik                                  15.66rps               21.83rps
+  Error Rate                                      0.06%                     0%
+  Booking Success Rate                            99.8%                   100%
+  Total Booking Sukses                             1571                   2196
+  Total Booking Gagal                                 3                      0
+  HTTP Response P50                             476.0ms                298.0ms
+  HTTP Response P95                            1174.0ms                762.0ms
+  HTTP Response P99                            1472.0ms                947.0ms
+  Flow Duration P95                            2320.0ms               1339.0ms
+  CPU Rata-rata                                  0.64 %                 2.54 %
+  CPU Maksimum                                   3.91 %                 16.8 %
+  Memory Rata-rata                             22.77 MB              337.19 MB
+  Memory Maksimum                              24.14 MB              500.62 MB
+  ------------------------------------------------------------------------------------------
+
+  [ SPIKE TESTING ]
+  ------------------------------------------------------------------------------------------
+  Metrik                              Go (hotelbooking)  Node.js (RoomMasterb)
+  ------------------------------------------------------------------------------------------
+  Total HTTP Requests                              3682                   5491
+  Req / detik                                  20.18rps               30.19rps
+  Error Rate                                         0%                     0%
+  Booking Success Rate                             100%                   100%
+  Total Booking Sukses                             1227                   1830
+  Total Booking Gagal                                 0                      0
+  HTTP Response P50                             545.0ms                297.0ms
+  HTTP Response P95                            1350.0ms                753.0ms
+  HTTP Response P99                            1599.0ms                842.0ms
+  Flow Duration P95                            2745.0ms                 1303ms
+  CPU Rata-rata                                  0.68 %                 3.04 %
+  CPU Maksimum                                    4.3 %                 24.8 %
+  Memory Rata-rata                             24.52 MB              744.02 MB
+  Memory Maksimum                              26.59 MB             1029.53 MB
+  ------------------------------------------------------------------------------------------
+
+  [ STRESS TESTING ]
+  ------------------------------------------------------------------------------------------
+  Metrik                              Go (hotelbooking)  Node.js (RoomMasterb)
+  ------------------------------------------------------------------------------------------
+  Total HTTP Requests                             16870                  23995
+  Req / detik                                  40.03rps               56.83rps
+  Error Rate                                      0.85%                     0%
+  Booking Success Rate                            97.9%                   100%
+  Total Booking Sukses                             5538                   7998
+  Total Booking Gagal                               117                      0
+  HTTP Response P50                             557.0ms                309.0ms
+  HTTP Response P95                            1450.0ms                933.0ms
+  HTTP Response P99                            1664.0ms               1255.0ms
+  Flow Duration P95                              2850ms                 1744ms
+  CPU Rata-rata                                  1.53 %                 6.04 %
+  CPU Maksimum                                   7.81 %                48.83 %
+  Memory Rata-rata                              27.2 MB             1298.13 MB
+  Memory Maksimum                              33.89 MB             1995.52 MB
+  ------------------------------------------------------------------------------------------
+
+==========================================================================================
+

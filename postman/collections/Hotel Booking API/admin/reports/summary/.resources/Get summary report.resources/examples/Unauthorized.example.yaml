@@ -1,0 +1,33 @@
+$kind: http-example
+request:
+  url: "{{baseUrl}}/admin/reports/summary?hotel_id=string&start=string&end=string"
+  method: GET
+  headers:
+    - key: Accept
+      value: application/json
+    - key: Authorization
+      value: <API Key>
+      description: "Added as a part of security scheme: apikey"
+  queryParams:
+    - key: hotel_id
+      value: string
+      description: Hotel ID
+    - key: start
+      value: string
+      description: Start date (YYYY-MM-DD)
+    - key: end
+      value: string
+      description: End date (YYYY-MM-DD)
+response:
+  statusCode: 401
+  statusText: Unauthorized
+  headers:
+    Content-Type: application/json
+  body:
+    type: json
+    content: |-
+      {
+        "key_0": "string",
+        "key_1": "string"
+      }
+order: 3000

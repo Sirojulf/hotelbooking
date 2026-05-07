@@ -1,0 +1,43 @@
+$kind: http-example
+request:
+  url: "{{baseUrl}}/auth/admin/login"
+  method: POST
+  headers:
+    Content-Type: application/json
+    Accept: application/json
+  body:
+    type: json
+    content: |-
+      {
+        "email": "string",
+        "password": "string"
+      }
+response:
+  statusCode: 200
+  statusText: OK
+  headers:
+    Content-Type: application/json
+  body:
+    type: json
+    content: |-
+      {
+        "profile": {
+          "created_at": "string",
+          "email": "string",
+          "full_name": "string",
+          "hotel_id": "string",
+          "id": "string",
+          "role": "string"
+        },
+        "session": {
+          "access_token": "string",
+          "expires_at": 1406,
+          "expires_in": 1322,
+          "refresh_token": "string",
+          "token_type": "string",
+          "user": {
+            "key_0": 7386.441627628253
+          }
+        }
+      }
+order: 1000

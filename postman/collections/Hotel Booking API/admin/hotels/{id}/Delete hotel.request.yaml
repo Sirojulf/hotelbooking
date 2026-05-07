@@ -1,0 +1,15 @@
+$kind: http-request
+url: "{{baseUrl}}/admin/hotels/:id"
+method: DELETE
+pathVariables:
+  - key: id
+    value: string
+    description: Hotel ID
+auth:
+  type: apikey
+  credentials:
+    key: Authorization
+    value: "{{apiKey}}"
+    in: header
+examples: ./.resources/Delete hotel.resources/examples
+order: 1000

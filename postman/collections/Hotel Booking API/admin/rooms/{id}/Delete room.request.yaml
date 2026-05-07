@@ -1,0 +1,15 @@
+$kind: http-request
+url: "{{baseUrl}}/admin/rooms/:id"
+method: DELETE
+pathVariables:
+  - key: id
+    value: string
+    description: Room ID
+auth:
+  type: apikey
+  credentials:
+    key: Authorization
+    value: "{{apiKey}}"
+    in: header
+examples: ./.resources/Delete room.resources/examples
+order: 1000

@@ -1,0 +1,17 @@
+$kind: http-request
+url: "{{baseUrl}}/guests/reservations/:id/transactions"
+method: GET
+headers:
+  Accept: application/json
+pathVariables:
+  - key: id
+    value: string
+    description: Reservation ID
+auth:
+  type: apikey
+  credentials:
+    key: Authorization
+    value: "{{apiKey}}"
+    in: header
+examples: ./.resources/Get reservation transactions.resources/examples
+order: 1000

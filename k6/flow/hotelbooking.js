@@ -1,46 +1,61 @@
 /**
  * Booking flow untuk hotelbooking (Go REST API)
- * Flow: login → cek availability → buat reservasi → cancel
- * Cancel di akhir agar room bisa dipakai ulang oleh VU lain
+ * Flow: cek availability → buat reservasi → cancel
+ * Token login di-cache via setup() agar tidak rate-limited Supabase.
  */
 
 import http from 'k6/http';
 import { check, group } from 'k6';
 import { HOTELBOOKING, getCheckInOut, pickRoom } from '../config.js';
 
-const BASE = HOTELBOOKING.baseURL;
+const BASE   = HOTELBOOKING.baseURL;
 const JSON_H = { 'Content-Type': 'application/json' };
-const authH = (token) => ({ ...JSON_H, Authorization: `Bearer ${token}` });
+const authH  = (token) => ({ ...JSON_H, Authorization: `Bearer ${token}` });
 
 /**
- * Jalankan full booking flow.
+ * Login sekali sebelum semua VU mulai.
+ * Hasilnya dikirim ke setiap VU melalui parameter fungsi default.
+ */
+export function setup() {
+  const res = http.post(
+    `${BASE}/auth/guest/login`,
+    JSON.stringify({ login: HOTELBOOKING.email, password: HOTELBOOKING.password }),
+    { headers: JSON_H },
+  );
+  if (res.status !== 200) {
+    console.error(`[setup] Login gagal: ${res.status} - ${res.body}`);
+    return { token: null };
+  }
+  const token = res.json('access_token');
+  if (!token) {
+    console.error('[setup] access_token tidak ditemukan di response');
+    return { token: null };
+  }
+  console.log('[setup] Login berhasil, token siap dipakai semua VU');
+  return { token };
+}
+
+/**
+ * Jalankan full booking flow (tanpa login ulang).
+ * @param {string} token  - JWT dari setup()
  * @returns {{ success: boolean, durationMs: number }}
  */
-export function runBookingFlow() {
-  const vuId = __VU - 1;
+export function runBookingFlow(token) {
+  const vuId   = __VU - 1;
+  const iter   = __ITER;
   const roomId = pickRoom(HOTELBOOKING.roomIds, vuId);
-  const { checkIn, checkOut } = getCheckInOut(vuId);
-  const start = Date.now();
+  const { checkIn, checkOut } = getCheckInOut(vuId, iter);
+  const start  = Date.now();
 
-  let token = null;
+  if (!token) {
+    console.error(`VU${__VU} iter${iter}: token null, skip`);
+    return { success: false, durationMs: 0 };
+  }
+
   let reservationId = null;
   let success = false;
 
-  // 1. Login
-  group('login', () => {
-    const res = http.post(
-      `${BASE}/auth/guest/login`,
-      JSON.stringify({ login: HOTELBOOKING.email, password: HOTELBOOKING.password }),
-      { headers: JSON_H },
-    );
-    if (check(res, { 'login 200': (r) => r.status === 200 })) {
-      token = res.json('access_token');
-    }
-  });
-
-  if (!token) return { success: false, durationMs: Date.now() - start };
-
-  // 2. Cek ketersediaan
+  // 1. Cek ketersediaan
   group('check_availability', () => {
     const res = http.get(
       `${BASE}/rooms/${roomId}/availability?check_in=${checkIn}&check_out=${checkOut}`,
@@ -49,17 +64,17 @@ export function runBookingFlow() {
     check(res, { 'availability 200': (r) => r.status === 200 });
   });
 
-  // 3. Buat reservasi
+  // 2. Buat reservasi
   group('create_reservation', () => {
     const res = http.post(
       `${BASE}/guests/reservations`,
       JSON.stringify({
-        hotel_id: HOTELBOOKING.hotelId,
-        room_id: roomId,
-        check_in: checkIn,
-        check_out: checkOut,
-        booking_source: 'online',
-        payment_method: 'transfer',
+        hotel_id:         HOTELBOOKING.hotelId,
+        room_id:          roomId,
+        check_in:         checkIn,
+        check_out:        checkOut,
+        booking_source:   'online',
+        payment_method:   'transfer',
         special_requests: 'k6 test',
       }),
       { headers: authH(token) },
@@ -71,7 +86,7 @@ export function runBookingFlow() {
 
   if (!reservationId) return { success: false, durationMs: Date.now() - start };
 
-  // 4. Cancel (cleanup — biarkan slot terbuka untuk VU lain)
+  // 3. Cancel — bebaskan slot untuk iterasi berikutnya
   group('cancel_reservation', () => {
     const res = http.post(
       `${BASE}/guests/reservations/${reservationId}/cancel`,
@@ -86,12 +101,13 @@ export function runBookingFlow() {
   return { success, durationMs: Date.now() - start };
 }
 
-/**
- * Simple read-only flow: list hotels.
- * Digunakan saat mengukur throughput murni tanpa autentikasi.
- */
+// Entry point untuk k6 run langsung (quick test)
+export default function (data) {
+  runBookingFlow(data ? data.token : null);
+}
+
 export function runReadFlow() {
   const res = http.get(`${BASE}/hotels`);
-  const ok = check(res, { 'hotels 200': (r) => r.status === 200 });
+  const ok  = check(res, { 'hotels 200': (r) => r.status === 200 });
   return { success: ok, durationMs: res.timings.duration };
 }

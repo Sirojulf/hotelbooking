@@ -1,0 +1,56 @@
+$kind: http-example
+request:
+  url: "{{baseUrl}}/admin/reservations/:id"
+  method: PUT
+  headers:
+    - key: Content-Type
+      value: application/json
+    - key: Accept
+      value: application/json
+    - key: Authorization
+      value: <API Key>
+      description: "Added as a part of security scheme: apikey"
+  pathVariables:
+    - key: id
+      value: string
+      description: Reservation ID
+  body:
+    type: json
+    content: |-
+      {
+        "ai_notes": "string",
+        "checked_in_at": "string",
+        "checked_out_at": "string",
+        "payment_status": "string"
+      }
+response:
+  statusCode: 200
+  statusText: OK
+  headers:
+    Content-Type: application/json
+  body:
+    type: json
+    content: |-
+      {
+        "agent_id": "string",
+        "ai_notes": "string",
+        "booking_source": "walk_in",
+        "check_in_date": "string",
+        "check_out_date": "string",
+        "checked_in_at": "string",
+        "checked_out_at": "string",
+        "created_at": "string",
+        "guest_id": "string",
+        "hotel_id": "string",
+        "hotels": {
+          "address": "string",
+          "name": "string"
+        },
+        "id": "string",
+        "payment_method": "string",
+        "payment_status": "cancelled",
+        "room_id": "string",
+        "special_requests": "string",
+        "total_price": 5510.726267285863
+      }
+order: 1000

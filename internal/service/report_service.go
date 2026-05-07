@@ -75,12 +75,12 @@ func (s *reportService) GetSummary(hotelID string, start, end time.Time) (*Repor
 		if r.PaymentStatus == models.PaymentStatusCancelled || r.PaymentStatus == models.PaymentStatusPending {
 			continue
 		}
-		nights := int(r.CheckOutDate.Sub(r.CheckInDate).Hours() / 24)
+		nights := int(r.CheckOutDate.Sub(r.CheckInDate.Time).Hours() / 24)
 		totalReservations++
 		totalNights += nights
 		revenue += r.TotalPrice
 
-		for day := r.CheckInDate; day.Before(r.CheckOutDate); day = day.AddDate(0, 0, 1) {
+		for day := r.CheckInDate.Time; day.Before(r.CheckOutDate.Time); day = day.AddDate(0, 0, 1) {
 			key := day.Format("2006-01-02")
 			if _, ok := occupancyByDate[key]; ok {
 				occupancyByDate[key]++

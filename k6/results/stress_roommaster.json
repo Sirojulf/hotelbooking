@@ -1,0 +1,326 @@
+{
+  "root_group": {
+    "id": "d41d8cd98f00b204e9800998ecf8427e",
+    "groups": [
+      {
+        "groups": [],
+        "checks": [
+            {
+              "path": "::check_availability::availability 200",
+              "id": "170497a1ba09ab12bc61d1ac666cb42c",
+              "passes": 7998,
+              "fails": 0,
+              "name": "availability 200"
+            }
+          ],
+        "name": "check_availability",
+        "path": "::check_availability",
+        "id": "a1ce334599bdf8db1c2a0f1ce9dcaa1d"
+      },
+      {
+        "name": "create_reservation",
+        "path": "::create_reservation",
+        "id": "acb7c4716fe29a1dc9564f37102404e8",
+        "groups": [],
+        "checks": [
+            {
+              "name": "reservation 201",
+              "path": "::create_reservation::reservation 201",
+              "id": "8327defe7d52026856c38953b23e2672",
+              "passes": 7998,
+              "fails": 0
+            }
+          ]
+      },
+      {
+        "name": "cancel_reservation",
+        "path": "::cancel_reservation",
+        "id": "1b80e203cede8d1b79e2d3300023651c",
+        "groups": [],
+        "checks": [
+            {
+              "name": "cancel 200",
+              "path": "::cancel_reservation::cancel 200",
+              "id": "2c28fb504e3282ce6a25ba823cdfd771",
+              "passes": 7998,
+              "fails": 0
+            }
+          ]
+      }
+    ],
+    "checks": [],
+    "name": "",
+    "path": ""
+  },
+  "options": {
+    "summaryTrendStats": [
+      "avg",
+      "min",
+      "med",
+      "max",
+      "p(90)",
+      "p(95)",
+      "p(99)"
+    ],
+    "summaryTimeUnit": "",
+    "noColor": false
+  },
+  "state": {
+    "isStdErrTTY": true,
+    "testRunDurationMs": 422209.0903,
+    "isStdOutTTY": true
+  },
+  "metrics": {
+    "vus_max": {
+      "contains": "default",
+      "values": {
+        "value": 100,
+        "min": 100,
+        "max": 100
+      },
+      "type": "gauge"
+    },
+    "http_req_blocked": {
+      "type": "trend",
+      "contains": "time",
+      "values": {
+        "p(99)": 0,
+        "avg": 0.008496045009376955,
+        "min": 0,
+        "med": 0,
+        "max": 15.1464,
+        "p(90)": 0,
+        "p(95)": 0
+      }
+    },
+    "group_duration": {
+      "values": {
+        "min": 123.5582,
+        "med": 309.5557,
+        "max": 2324.612,
+        "p(90)": 829.8121300000001,
+        "p(95)": 933.06161,
+        "p(99)": 1255.172627,
+        "avg": 440.1341728140369
+      },
+      "type": "trend",
+      "contains": "time"
+    },
+    "http_req_connecting": {
+      "type": "trend",
+      "contains": "time",
+      "values": {
+        "avg": 0.004256132527609917,
+        "min": 0,
+        "med": 0,
+        "max": 12.7265,
+        "p(90)": 0,
+        "p(95)": 0,
+        "p(99)": 0
+      }
+    },
+    "booking_total": {
+      "type": "counter",
+      "contains": "default",
+      "values": {
+        "count": 7998,
+        "rate": 18.943220749503602
+      }
+    },
+    "http_req_waiting": {
+      "type": "trend",
+      "contains": "time",
+      "values": {
+        "p(99)": 1254.3877460000003,
+        "avg": 439.1370428380902,
+        "min": 119.9773,
+        "med": 308.5445,
+        "max": 2323.7218,
+        "p(90)": 829.2530000000004,
+        "p(95)": 932.6092399999999
+      }
+    },
+    "vus": {
+      "type": "gauge",
+      "contains": "default",
+      "values": {
+        "value": 1,
+        "min": 0,
+        "max": 100
+      }
+    },
+    "booking_success_rate": {
+      "type": "rate",
+      "contains": "default",
+      "values": {
+        "rate": 1,
+        "passes": 7998,
+        "fails": 0
+      },
+      "thresholds": {
+        "rate>0.70": {
+          "ok": true
+        }
+      }
+    },
+    "http_req_tls_handshaking": {
+      "values": {
+        "p(90)": 0,
+        "p(95)": 0,
+        "p(99)": 0,
+        "avg": 0,
+        "min": 0,
+        "med": 0,
+        "max": 0
+      },
+      "type": "trend",
+      "contains": "time"
+    },
+    "data_sent": {
+      "contains": "data",
+      "values": {
+        "count": 25033943,
+        "rate": 59292.761750373895
+      },
+      "type": "counter"
+    },
+    "http_req_failed": {
+      "contains": "default",
+      "values": {
+        "rate": 0,
+        "passes": 0,
+        "fails": 23995
+      },
+      "thresholds": {
+        "rate<0.20": {
+          "ok": true
+        }
+      },
+      "type": "rate"
+    },
+    "http_req_duration": {
+      "contains": "time",
+      "values": {
+        "avg": 440.018267339028,
+        "min": 123.5582,
+        "med": 309.4515,
+        "max": 2324.612,
+        "p(90)": 829.7055400000002,
+        "p(95)": 933.05908,
+        "p(99)": 1255.1702660000003
+      },
+      "thresholds": {
+        "p(95)<10000": {
+          "ok": true
+        }
+      },
+      "type": "trend"
+    },
+    "booking_flow_duration_ms": {
+      "thresholds": {
+        "p(95)<20000": {
+          "ok": true
+        }
+      },
+      "type": "trend",
+      "contains": "time",
+      "values": {
+        "med": 1226,
+        "max": 2907,
+        "p(90)": 1584.3000000000002,
+        "p(95)": 1744,
+        "p(99)": 2303.0299999999997,
+        "avg": 1320.473743435859,
+        "min": 1086
+      }
+    },
+    "http_reqs": {
+      "type": "counter",
+      "contains": "default",
+      "values": {
+        "count": 23995,
+        "rate": 56.832030743228174
+      }
+    },
+    "data_received": {
+      "type": "counter",
+      "contains": "data",
+      "values": {
+        "count": 18858378,
+        "rate": 44665.96867111556
+      }
+    },
+    "http_req_duration{expected_response:true}": {
+      "values": {
+        "p(99)": 1255.1702660000003,
+        "avg": 440.018267339028,
+        "min": 123.5582,
+        "med": 309.4515,
+        "max": 2324.612,
+        "p(90)": 829.7055400000002,
+        "p(95)": 933.05908
+      },
+      "type": "trend",
+      "contains": "time"
+    },
+    "checks": {
+      "type": "rate",
+      "contains": "default",
+      "values": {
+        "rate": 1,
+        "passes": 23994,
+        "fails": 0
+      }
+    },
+    "iteration_duration": {
+      "values": {
+        "max": 3907.701,
+        "p(90)": 2585.06774,
+        "p(95)": 2744.765435,
+        "p(99)": 3303.9144069999998,
+        "avg": 2320.905228757186,
+        "min": 2086.4823,
+        "med": 2226.2007
+      },
+      "type": "trend",
+      "contains": "time"
+    },
+    "iterations": {
+      "type": "counter",
+      "contains": "default",
+      "values": {
+        "count": 7998,
+        "rate": 18.943220749503602
+      }
+    },
+    "http_req_sending": {
+      "type": "trend",
+      "contains": "time",
+      "values": {
+        "med": 0,
+        "max": 14.5854,
+        "p(90)": 0,
+        "p(95)": 0,
+        "p(99)": 0.5371600000000013,
+        "avg": 0.01798678057928736,
+        "min": 0
+      }
+    },
+    "http_req_receiving": {
+      "type": "trend",
+      "contains": "time",
+      "values": {
+        "p(90)": 1.8420000000000043,
+        "p(95)": 3.58743,
+        "p(99)": 8.550428000000018,
+        "avg": 0.8632377203584058,
+        "min": 0,
+        "med": 0.5107,
+        "max": 27.8689
+      }
+    }
+  },
+  "setup_data": {
+    "token": "eyJhbGciOiJFUzI1NiIsImtpZCI6IjczNjlkYzE0LTA5OTEtNDVlZC05OWE2LTZiN2M3MWIzNzk3NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJodHRwczovL3luZ2xsbnR1aGpzYXNtc3hvb3NjLnN1cGFiYXNlLmNvL2F1dGgvdjEiLCJzdWIiOiIxYzlhMWE1NC05NDEwLTRkZTItYjkwNy0xMzI0MDI1NTA4MGMiLCJhdWQiOiJhdXRoZW50aWNhdGVkIiwiZXhwIjoxNzc4MTcyMzg0LCJpYXQiOjE3NzgxNjg3ODQsImVtYWlsIjoiazZ0ZXN0QHJvb21tYXN0ZXIudGVzdCIsInBob25lIjoiIiwiYXBwX21ldGFkYXRhIjp7InByb3ZpZGVyIjoiZW1haWwiLCJwcm92aWRlcnMiOlsiZW1haWwiXX0sInVzZXJfbWV0YWRhdGEiOnsiZW1haWxfdmVyaWZpZWQiOnRydWV9LCJyb2xlIjoiYXV0aGVudGljYXRlZCIsImFhbCI6ImFhbDEiLCJhbXIiOlt7Im1ldGhvZCI6InBhc3N3b3JkIiwidGltZXN0YW1wIjoxNzc4MTY4Nzg0fV0sInNlc3Npb25faWQiOiI3ZTgyMWEwMC05ZTM5LTQxYjQtYjEwNC1jNDJkOWNjOTI5YmEiLCJpc19hbm9ueW1vdXMiOmZhbHNlfQ.Ru4iSpqyIYFTfdYhm_BZQkgYiR0qrmeAvdLjRBDEj6O9mS52rko4SOhIEXsPC8BvWmr8R6tarQuNtk8-eOeUzQ"
+  }
+}

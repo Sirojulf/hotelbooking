@@ -1,0 +1,7 @@
+name: token
+values:
+  - key: token
+    value: ''
+  - key: reservationId
+    value: ''
+color: 120

@@ -1,0 +1,43 @@
+$kind: http-example
+request:
+  url: "{{baseUrl}}/guests/reservations/:id/transactions"
+  method: GET
+  headers:
+    - key: Accept
+      value: application/json
+    - key: Authorization
+      value: <API Key>
+      description: "Added as a part of security scheme: apikey"
+  pathVariables:
+    - key: id
+      value: string
+      description: Reservation ID
+response:
+  statusCode: 200
+  statusText: OK
+  headers:
+    Content-Type: application/json
+  body:
+    type: json
+    content: |-
+      [
+        {
+          "amount": 2402.3504693936625,
+          "created_at": "string",
+          "created_by": "string",
+          "description": "string",
+          "id": "string",
+          "reservation_id": "string",
+          "type": "refund"
+        },
+        {
+          "amount": 6513.371803396766,
+          "created_at": "string",
+          "created_by": "string",
+          "description": "string",
+          "id": "string",
+          "reservation_id": "string",
+          "type": "payment"
+        }
+      ]
+order: 1000

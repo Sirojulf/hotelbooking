@@ -21,6 +21,7 @@
 param(
     [string]$TestName    = "monitor",
     [string]$ProcessName = "main",
+    [int]$ProcessId      = 0,
     [int]$IntervalSec    = 1,
     [int]$DurationSec    = 600
 )
@@ -53,31 +54,36 @@ $prevCpuTime = @{}
 try {
     while ((Get-Date) -lt $endTime) {
         $timestamp = (Get-Date).ToString("yyyy-MM-dd HH:mm:ss")
-        $procs = Get-Process -Name $ProcessName -ErrorAction SilentlyContinue
 
-        if ($null -eq $procs -or $procs.Count -eq 0) {
-            Write-Host "[$timestamp] Proses '$ProcessName' tidak ditemukan, menunggu..." -ForegroundColor Yellow
+        if ($ProcessId -gt 0) {
+            $proc = Get-Process -Id $ProcessId -ErrorAction SilentlyContinue
+        } else {
+            $procs = Get-Process -Name $ProcessName -ErrorAction SilentlyContinue
+            # Jika ada multiple proses, ambil yang WorkingSet terbesar (kemungkinan server)
+            $proc = $procs | Sort-Object WorkingSet64 -Descending | Select-Object -First 1
+        }
+
+        if ($null -eq $proc) {
+            $label = if ($ProcessId -gt 0) { "PID $ProcessId" } else { "'$ProcessName'" }
+            Write-Host "[$timestamp] Proses $label tidak ditemukan, menunggu..." -ForegroundColor Yellow
             Start-Sleep -Seconds $IntervalSec
             continue
         }
 
-        # Ambil proses pertama (jika ada multiple)
-        $proc = $procs | Select-Object -First 1
-
         # CPU Usage: hitung delta TotalProcessorTime
-        $pid = $proc.Id
+        $procId   = $proc.Id
         $curCpuMs = $proc.TotalProcessorTime.TotalMilliseconds
         $cpuPercent = 0
 
-        if ($prevCpuTime.ContainsKey($pid)) {
-            $deltaCpuMs   = $curCpuMs - $prevCpuTime[$pid]
+        if ($prevCpuTime.ContainsKey($procId)) {
+            $deltaCpuMs   = $curCpuMs - $prevCpuTime[$procId]
             $deltaWallMs  = $IntervalSec * 1000
             $numCores      = [Environment]::ProcessorCount
             $cpuPercent    = [math]::Round(($deltaCpuMs / ($deltaWallMs * $numCores)) * 100, 2)
             if ($cpuPercent -lt 0)   { $cpuPercent = 0 }
             if ($cpuPercent -gt 100) { $cpuPercent = 100 }
         }
-        $prevCpuTime[$pid] = $curCpuMs
+        $prevCpuTime[$procId] = $curCpuMs
 
         # Memory
         $memMB         = [math]::Round($proc.PrivateMemorySize64 / 1MB, 2)

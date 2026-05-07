@@ -1,0 +1,13 @@
+$kind: http-request
+url: "{{baseUrl}}/guests/me"
+method: GET
+headers:
+  Accept: application/json
+auth:
+  type: apikey
+  credentials:
+    key: Authorization
+    value: "{{apiKey}}"
+    in: header
+examples: ./.resources/Get my profile.resources/examples
+order: 1000

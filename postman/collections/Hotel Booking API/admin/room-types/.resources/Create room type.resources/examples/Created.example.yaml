@@ -1,0 +1,56 @@
+$kind: http-example
+request:
+  url: "{{baseUrl}}/admin/room-types"
+  method: POST
+  headers:
+    - key: Content-Type
+      value: application/json
+    - key: Accept
+      value: application/json
+    - key: Authorization
+      value: <API Key>
+      description: "Added as a part of security scheme: apikey"
+  body:
+    type: json
+    content: |-
+      {
+        "amenities": {},
+        "bed_count": 1200,
+        "bed_type": "string",
+        "capacity": 2658,
+        "description": "string",
+        "hotel_id": "string",
+        "images": {},
+        "name": "string",
+        "price_per_night": 2173.5973937431177,
+        "size_sqm": 5871.347810731584,
+        "smoking_allowed": false,
+        "view_type": "string"
+      }
+response:
+  statusCode: 201
+  statusText: Created
+  headers:
+    Content-Type: application/json
+  body:
+    type: json
+    content: |-
+      {
+        "amenities": {},
+        "base_price": 8879.075221638253,
+        "bed_count": 2734,
+        "bed_type": "string",
+        "capacity": 9084,
+        "created_at": "string",
+        "description": "string",
+        "hotel_id": "string",
+        "id": "string",
+        "images": {},
+        "name": "string",
+        "price_per_night": 5003.868580947036,
+        "size_sqm": 6431.841202915591,
+        "smoking_allowed": false,
+        "updated_at": "string",
+        "view_type": "string"
+      }
+order: 1000

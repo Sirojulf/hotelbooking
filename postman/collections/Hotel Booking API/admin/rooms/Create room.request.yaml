@@ -1,0 +1,24 @@
+$kind: http-request
+url: "{{baseUrl}}/admin/rooms"
+method: POST
+headers:
+  Content-Type: application/json
+  Accept: application/json
+body:
+  type: json
+  content: |-
+    {
+      "floor_number": 5411,
+      "hotel_id": "string",
+      "room_number": "string",
+      "room_type_id": "string",
+      "wing": "string"
+    }
+auth:
+  type: apikey
+  credentials:
+    key: Authorization
+    value: "{{apiKey}}"
+    in: header
+examples: ./.resources/Create room.resources/examples
+order: 3000

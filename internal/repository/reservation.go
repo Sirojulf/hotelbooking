@@ -31,14 +31,7 @@ func (r *reservationRepo) CreateReservation(res models.Reservation) error {
 	if config.SupabaseClient == nil {
 		return fmt.Errorf("supabase client is not initialized")
 	}
-	available, err := r.CheckAvailability(res.RoomID.String(), res.CheckInDate.Format("2006-01-02"), res.CheckOutDate.Format("2006-01-02"))
-	if err != nil {
-		return err
-	}
-	if !available {
-		return fmt.Errorf("kamar tidak tersedia pada tanggal tersebut")
-	}
-	_, _, err = config.SupabaseClient.From("reservations").Insert(res, false, "", "", "").Execute()
+	_, _, err := config.SupabaseClient.From("reservations").Insert(res, false, "", "", "").Execute()
 	if err != nil {
 		return fmt.Errorf("gagal membuat reservasi: %v", err)
 	}

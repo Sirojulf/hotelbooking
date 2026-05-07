@@ -1,0 +1,61 @@
+$kind: http-example
+request:
+  url: "{{baseUrl}}/admin/room-types?hotel_id=string"
+  method: GET
+  headers:
+    - key: Accept
+      value: application/json
+    - key: Authorization
+      value: <API Key>
+      description: "Added as a part of security scheme: apikey"
+  queryParams:
+    - key: hotel_id
+      value: string
+      description: Hotel ID
+response:
+  statusCode: 200
+  statusText: OK
+  headers:
+    Content-Type: application/json
+  body:
+    type: json
+    content: |-
+      [
+        {
+          "amenities": {},
+          "base_price": 1302.8972660025995,
+          "bed_count": 1789,
+          "bed_type": "string",
+          "capacity": 6092,
+          "created_at": "string",
+          "description": "string",
+          "hotel_id": "string",
+          "id": "string",
+          "images": {},
+          "name": "string",
+          "price_per_night": 7079.487862087395,
+          "size_sqm": 2089.1705739339427,
+          "smoking_allowed": true,
+          "updated_at": "string",
+          "view_type": "string"
+        },
+        {
+          "amenities": {},
+          "base_price": 8574.79498045021,
+          "bed_count": 1264,
+          "bed_type": "string",
+          "capacity": 6003,
+          "created_at": "string",
+          "description": "string",
+          "hotel_id": "string",
+          "id": "string",
+          "images": {},
+          "name": "string",
+          "price_per_night": 9338.886534085248,
+          "size_sqm": 3850.447215629956,
+          "smoking_allowed": true,
+          "updated_at": "string",
+          "view_type": "string"
+        }
+      ]
+order: 1000

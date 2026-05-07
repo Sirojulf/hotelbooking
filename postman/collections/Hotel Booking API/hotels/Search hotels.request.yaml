@@ -1,0 +1,11 @@
+$kind: http-request
+url: "{{baseUrl}}/hotels?q=string"
+method: GET
+headers:
+  Accept: application/json
+queryParams:
+  - key: q
+    value: string
+    description: Search query (name/address)
+examples: ./.resources/Search hotels.resources/examples
+order: 2000

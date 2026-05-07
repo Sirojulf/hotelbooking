@@ -1,0 +1,26 @@
+$kind: http-request
+url: "{{baseUrl}}/admin/reservations?hotel_id=string&status=string&start=string&end=string"
+method: GET
+headers:
+  Accept: application/json
+queryParams:
+  - key: hotel_id
+    value: string
+    description: Hotel ID
+  - key: status
+    value: string
+    description: Payment status
+  - key: start
+    value: string
+    description: Start date (YYYY-MM-DD)
+  - key: end
+    value: string
+    description: End date (YYYY-MM-DD)
+auth:
+  type: apikey
+  credentials:
+    key: Authorization
+    value: "{{apiKey}}"
+    in: header
+examples: ./.resources/List reservations (admin).resources/examples
+order: 2000

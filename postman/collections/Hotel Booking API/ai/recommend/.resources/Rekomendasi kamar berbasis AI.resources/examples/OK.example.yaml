@@ -1,0 +1,35 @@
+$kind: http-example
+request:
+  url: "{{baseUrl}}/ai/recommend"
+  method: POST
+  headers:
+    Content-Type: application/json
+    Accept: application/json
+  body:
+    type: json
+    content: |-
+      {
+        "budget": 5887.233058458011,
+        "check_in": "string",
+        "check_out": "string",
+        "preferences": "string",
+        "query": "string"
+      }
+response:
+  statusCode: 200
+  statusText: OK
+  headers:
+    Content-Type: application/json
+  body:
+    type: json
+    content: |-
+      {
+        "estimated_price": 3769.5325519144494,
+        "hotel_id": "string",
+        "hotel_name": "string",
+        "promo_message": "string",
+        "reasoning": "string",
+        "recommended_room_id": "string",
+        "room_number": "string"
+      }
+order: 1000

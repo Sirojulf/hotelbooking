@@ -1,0 +1,94 @@
+$kind: http-example
+request:
+  url: "{{baseUrl}}/admin/rooms?hotel_id=string&room_type_id=string"
+  method: GET
+  headers:
+    - key: Accept
+      value: application/json
+    - key: Authorization
+      value: <API Key>
+      description: "Added as a part of security scheme: apikey"
+  queryParams:
+    - key: hotel_id
+      value: string
+      description: Hotel ID
+    - key: room_type_id
+      value: string
+      description: Room Type ID
+response:
+  statusCode: 200
+  statusText: OK
+  headers:
+    Content-Type: application/json
+  body:
+    type: json
+    content: |-
+      [
+        {
+          "cleaning_status": "out_of_order",
+          "created_at": "string",
+          "floor_number": 956,
+          "furniture_condition": "string",
+          "hotel_id": "string",
+          "id": "string",
+          "last_renovation_date": "string",
+          "room_number": "string",
+          "room_type_detail": {
+            "amenities": {},
+            "base_price": 4898.7901034943825,
+            "bed_count": 3179,
+            "bed_type": "string",
+            "capacity": 5734,
+            "created_at": "string",
+            "description": "string",
+            "hotel_id": "string",
+            "id": "string",
+            "images": {},
+            "name": "string",
+            "price_per_night": 9132.273291924232,
+            "size_sqm": 5580.066690528295,
+            "smoking_allowed": true,
+            "updated_at": "string",
+            "view_type": "string"
+          },
+          "room_type_id": "string",
+          "special_notes": "string",
+          "status": "available",
+          "updated_at": "string",
+          "wing": "string"
+        },
+        {
+          "cleaning_status": "out_of_service",
+          "created_at": "string",
+          "floor_number": 5441,
+          "furniture_condition": "string",
+          "hotel_id": "string",
+          "id": "string",
+          "last_renovation_date": "string",
+          "room_number": "string",
+          "room_type_detail": {
+            "amenities": {},
+            "base_price": 9551.163714626402,
+            "bed_count": 1693,
+            "bed_type": "string",
+            "capacity": 5435,
+            "created_at": "string",
+            "description": "string",
+            "hotel_id": "string",
+            "id": "string",
+            "images": {},
+            "name": "string",
+            "price_per_night": 842.8518934040962,
+            "size_sqm": 2939.210129870057,
+            "smoking_allowed": true,
+            "updated_at": "string",
+            "view_type": "string"
+          },
+          "room_type_id": "string",
+          "special_notes": "string",
+          "status": "occupied",
+          "updated_at": "string",
+          "wing": "string"
+        }
+      ]
+order: 1000

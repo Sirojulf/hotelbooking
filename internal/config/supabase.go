@@ -3,6 +3,8 @@ package config
 import (
 	"fmt"
 	"log"
+	"net/http"
+	"time"
 
 	"github.com/spf13/viper"
 	"github.com/supabase-community/supabase-go"
@@ -27,6 +29,13 @@ func ConnectSupabase() error {
 	supaKEY := viper.GetString("SUPABASE_KEY")
 	if supaKEY == "" {
 		return fmt.Errorf("SUPABASE_KEY is not set")
+	}
+
+	http.DefaultTransport = &http.Transport{
+		MaxIdleConns:        200,
+		MaxIdleConnsPerHost: 100,
+		IdleConnTimeout:     90 * time.Second,
+		TLSHandshakeTimeout: 10 * time.Second,
 	}
 
 	client, err := supabase.NewClient(supaURL, supaKEY, &supabase.ClientOptions{})

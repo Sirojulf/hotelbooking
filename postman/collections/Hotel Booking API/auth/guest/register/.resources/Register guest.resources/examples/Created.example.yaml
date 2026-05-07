@@ -1,0 +1,42 @@
+$kind: http-example
+request:
+  url: "{{baseUrl}}/auth/guest/register"
+  method: POST
+  headers:
+    Content-Type: application/json
+    Accept: application/json
+  body:
+    type: json
+    content: |-
+      {
+        "email": "string",
+        "full_name": "string",
+        "hotel_id": "string",
+        "password": "string",
+        "phone_number": "string",
+        "title": "string"
+      }
+response:
+  statusCode: 201
+  statusText: Created
+  headers:
+    Content-Type: application/json
+  body:
+    type: json
+    content: |-
+      {
+        "created_at": "string",
+        "email": "string",
+        "full_name": "string",
+        "hotel_id": "string",
+        "id": "string",
+        "last_visit_at": "string",
+        "loyalty_points": 274,
+        "loyalty_tier": "bronze",
+        "phone_number": "string",
+        "preferences": {},
+        "title": "string",
+        "total_spend": 4914.6143126333645,
+        "total_stays": 5663
+      }
+order: 1000

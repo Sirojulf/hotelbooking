@@ -1,0 +1,16 @@
+$kind: http-request
+name: Login admin/staff
+url: "{{baseUrl}}/auth/admin/login"
+method: POST
+headers:
+  Content-Type: application/json
+  Accept: application/json
+body:
+  type: json
+  content: |-
+    {
+      "email": "string",
+      "password": "string"
+    }
+examples: ./.resources/Login admin-staff.resources/examples
+order: 1000

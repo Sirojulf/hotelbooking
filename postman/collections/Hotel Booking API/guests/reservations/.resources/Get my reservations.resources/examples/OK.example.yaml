@@ -1,0 +1,65 @@
+$kind: http-example
+request:
+  url: "{{baseUrl}}/guests/reservations"
+  method: GET
+  headers:
+    - key: Accept
+      value: application/json
+    - key: Authorization
+      value: <API Key>
+      description: "Added as a part of security scheme: apikey"
+response:
+  statusCode: 200
+  statusText: OK
+  headers:
+    Content-Type: application/json
+  body:
+    type: json
+    content: |-
+      [
+        {
+          "agent_id": "string",
+          "ai_notes": "string",
+          "booking_source": "walk_in",
+          "check_in_date": "string",
+          "check_out_date": "string",
+          "checked_in_at": "string",
+          "checked_out_at": "string",
+          "created_at": "string",
+          "guest_id": "string",
+          "hotel_id": "string",
+          "hotels": {
+            "address": "string",
+            "name": "string"
+          },
+          "id": "string",
+          "payment_method": "string",
+          "payment_status": "cancelled",
+          "room_id": "string",
+          "special_requests": "string",
+          "total_price": 326.1381448062184
+        },
+        {
+          "agent_id": "string",
+          "ai_notes": "string",
+          "booking_source": "online",
+          "check_in_date": "string",
+          "check_out_date": "string",
+          "checked_in_at": "string",
+          "checked_out_at": "string",
+          "created_at": "string",
+          "guest_id": "string",
+          "hotel_id": "string",
+          "hotels": {
+            "address": "string",
+            "name": "string"
+          },
+          "id": "string",
+          "payment_method": "string",
+          "payment_status": "paid",
+          "room_id": "string",
+          "special_requests": "string",
+          "total_price": 9472.02582234894
+        }
+      ]
+order: 1000

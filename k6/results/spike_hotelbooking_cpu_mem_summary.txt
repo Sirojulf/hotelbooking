@@ -1,0 +1,7 @@
+=== CPU & MEMORY SUMMARY: spike_hotelbooking ===
+Proses      : main
+Sampel      : 238
+CPU Avg     : 0.68 %
+CPU Max     : 4.3 %
+Mem Avg     : 24.52 MB
+Mem Max     : 26.59 MB

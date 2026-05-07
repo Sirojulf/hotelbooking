@@ -1,0 +1,25 @@
+$kind: http-request
+url: "{{baseUrl}}/admin/users/:id"
+method: PUT
+headers:
+  Content-Type: application/json
+  Accept: application/json
+pathVariables:
+  - key: id
+    value: string
+    description: Profile ID
+body:
+  type: json
+  content: |-
+    {
+      "hotel_id": "string",
+      "role": "string"
+    }
+auth:
+  type: apikey
+  credentials:
+    key: Authorization
+    value: "{{apiKey}}"
+    in: header
+examples: ./.resources/Update staff profile.resources/examples
+order: 1000

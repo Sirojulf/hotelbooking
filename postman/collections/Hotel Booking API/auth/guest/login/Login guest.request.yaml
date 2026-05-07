@@ -1,0 +1,58 @@
+$kind: http-request
+name: Login guest
+url: http://localhost:8080/api/v1/auth/guest/login
+method: POST
+headers:
+  Content-Type: application/json
+  Accept: application/json
+body:
+  type: json
+  content: |-
+    {
+      "login": "k6test@mail.com",
+      "password": "password123"
+    }
+auth:
+  type: noauth
+scripts:
+  - type: afterResponse
+    code: "const response = pm.response.json();\r
+
+      let token = null;\r
+
+      \r
+
+      // Coba beberapa kemungkinan field name\r
+
+      if      (response.token)              token = response.token;\r
+
+      else if (response.access_token)       token = response.access_token;\r
+
+      else if (response.data?.token)        token = response.data.token;\r
+
+      else if (response.data?.access_token) token = response.data.access_token;\r
+
+      \r
+
+      if (token) {\r
+
+      \    pm.environment.set('token', token);\r
+
+      \    console.log('✅ Token tersimpan:', token.substring(0, 30) + '...');\r
+
+      } else {\r
+
+      \    console.warn('⚠️ Token tidak ditemukan. Struktur response:', response);\r
+
+      }\r
+
+      \r
+
+      pm.test('Login berhasil', () => {\r
+
+      \    pm.response.to.have.status(200);\r
+
+      });"
+    language: text/javascript
+examples: ./.resources/Login guest.resources/examples
+order: 1000

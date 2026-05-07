@@ -1,0 +1,31 @@
+$kind: http-request
+url: "{{baseUrl}}/admin/hotels/:id"
+method: PUT
+headers:
+  Content-Type: application/json
+  Accept: "*/*"
+pathVariables:
+  - key: id
+    value: string
+    description: Hotel ID
+body:
+  type: json
+  content: |-
+    {
+      "address": "string",
+      "check_in_time": "string",
+      "check_out_time": "string",
+      "code": "string",
+      "image_url": "string",
+      "name": "string",
+      "settings": {},
+      "status": "string"
+    }
+auth:
+  type: apikey
+  credentials:
+    key: Authorization
+    value: "{{apiKey}}"
+    in: header
+examples: ./.resources/Update hotel.resources/examples
+order: 2000
