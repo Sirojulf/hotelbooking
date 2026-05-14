@@ -1,11 +1,12 @@
 package repository
 
 import (
-	"encoding/json"
 	"fmt"
 	"hotelbooking/internal/config"
 	"hotelbooking/internal/models"
 	"strings"
+
+	json "github.com/goccy/go-json"
 )
 
 type HotelRepo interface {
@@ -137,6 +138,9 @@ func (r *hotelRepo) CreateRoomType(roomType models.RoomType) error {
 }
 
 func (r *hotelRepo) GetRoomTypeByID(id string) (*models.RoomType, error) {
+	if cached := getCachedRoomType(id); cached != nil {
+		return cached, nil
+	}
 	if config.SupabaseClient == nil {
 		return nil, fmt.Errorf("supabase client is not initialized")
 	}
@@ -148,6 +152,7 @@ func (r *hotelRepo) GetRoomTypeByID(id string) (*models.RoomType, error) {
 	if err := json.Unmarshal(resp, &rt); err != nil {
 		return nil, err
 	}
+	setCachedRoomType(id, &rt)
 	return &rt, nil
 }
 
@@ -207,6 +212,7 @@ func (r *hotelRepo) UpdateRoomType(rt models.RoomType) (*models.RoomType, error)
 	if err := json.Unmarshal(resp, &updated); err != nil {
 		return nil, err
 	}
+	invalidateRoomType(rt.ID.String())
 	return &updated, nil
 }
 
@@ -218,6 +224,7 @@ func (r *hotelRepo) DeleteRoomType(id string) error {
 	if err != nil {
 		return fmt.Errorf("gagal menghapus tipe kamar: %v", err)
 	}
+	invalidateRoomType(id)
 	return nil
 }
 
@@ -235,6 +242,9 @@ func (r *hotelRepo) CreateRoom(room models.Room) error {
 }
 
 func (r *hotelRepo) GetRoomByID(id string) (*models.Room, error) {
+	if cached := getCachedRoom(id); cached != nil {
+		return cached, nil
+	}
 	if config.SupabaseClient == nil {
 		return nil, fmt.Errorf("supabase client is not initialized")
 	}
@@ -246,6 +256,7 @@ func (r *hotelRepo) GetRoomByID(id string) (*models.Room, error) {
 	if err := json.Unmarshal(resp, &room); err != nil {
 		return nil, err
 	}
+	setCachedRoom(id, &room)
 	return &room, nil
 }
 
@@ -308,6 +319,7 @@ func (r *hotelRepo) UpdateRoom(room models.Room) (*models.Room, error) {
 	if err := json.Unmarshal(resp, &updated); err != nil {
 		return nil, err
 	}
+	invalidateRoom(room.ID.String())
 	return &updated, nil
 }
 
@@ -319,5 +331,6 @@ func (r *hotelRepo) DeleteRoom(id string) error {
 	if err != nil {
 		return fmt.Errorf("gagal menghapus kamar: %v", err)
 	}
+	invalidateRoom(id)
 	return nil
 }

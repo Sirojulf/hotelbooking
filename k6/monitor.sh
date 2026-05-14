@@ -1,21 +1,16 @@
 #!/usr/bin/env bash
 # monitor.sh
-# Monitor CPU dan Memory proses Go selama pengujian k6
+# Monitor CPU dan Memory proses server selama pengujian k6
 # Setara dengan monitor.ps1 untuk Linux (menggunakan /proc filesystem)
 #
 # Cara pakai:
-#   # Terminal 1 — jalankan server Go
-#   go run cmd/main.go
-#
-#   # Terminal 2 — jalankan monitor (SEBELUM k6 dimulai)
 #   ./k6/monitor.sh --test-name "load_hotelbooking" --process-name "main"
-#
-#   # Terminal 3 — jalankan k6
-#   k6 run k6/load_test.js
+#   ./k6/monitor.sh --test-name "load_roommaster"   --port 3000
 #
 # Parameter:
 #   --test-name     : nama file output CSV (tanpa ekstensi)
 #   --process-name  : nama proses yang dimonitor (default: "main" untuk Go)
+#   --port          : cari proses berdasarkan port yang di-listen (lebih akurat)
 #   --pid           : monitor berdasarkan PID spesifik (opsional)
 #   --interval      : interval sampling dalam detik (default: 1)
 #   --duration      : durasi monitoring dalam detik (default: 600 = 10 menit)
@@ -23,6 +18,7 @@
 TEST_NAME="monitor"
 PROCESS_NAME="main"
 PROCESS_ID=0
+LISTEN_PORT=""
 INTERVAL_SEC=1
 DURATION_SEC=600
 
@@ -30,6 +26,7 @@ while [[ $# -gt 0 ]]; do
     case $1 in
         --test-name|-t)    TEST_NAME="$2";    shift 2 ;;
         --process-name|-n) PROCESS_NAME="$2"; shift 2 ;;
+        --port|-P)         LISTEN_PORT="$2";  shift 2 ;;
         --pid|-p)          PROCESS_ID="$2";   shift 2 ;;
         --interval|-i)     INTERVAL_SEC="$2"; shift 2 ;;
         --duration|-d)     DURATION_SEC="$2"; shift 2 ;;
@@ -46,18 +43,34 @@ SUMMARY_FILE="$OUTPUT_DIR/${TEST_NAME}_cpu_mem_summary.txt"
 CLK_TCK=$(getconf CLK_TCK)
 NUM_CORES=$(nproc)
 
-echo "Timestamp,CPU_Percent,Memory_MB,Working_Set_MB,ProcessName" > "$OUTPUT_FILE"
+# Header: Memory_MB = RSS (physical), Virtual_MB = VmSize
+echo "Timestamp,CPU_Percent,Memory_MB,Virtual_MB,ProcessName" > "$OUTPUT_FILE"
 
 find_pid() {
     if [[ $PROCESS_ID -gt 0 ]]; then
         echo "$PROCESS_ID"
-    else
-        # Ambil PID dengan memory terbesar jika ada multiple proses
-        pgrep -x "$PROCESS_NAME" 2>/dev/null | while read -r pid; do
-            vmrss=$(awk '/^VmRSS:/{print $2}' "/proc/$pid/status" 2>/dev/null || echo 0)
-            echo "$vmrss $pid"
-        done | sort -rn | awk '{print $2; exit}'
+        return
     fi
+
+    # Cari berdasarkan port yang di-listen (lebih akurat untuk node/java/dll)
+    if [[ -n "$LISTEN_PORT" ]]; then
+        local pid
+        # ss: cari PID proses yang listen di port ini
+        pid=$(ss -tlnp "sport = :$LISTEN_PORT" 2>/dev/null \
+            | awk 'match($0, /pid=([0-9]+)/, a) {print a[1]; exit}')
+        if [[ -z "$pid" ]]; then
+            # Fallback: lsof (jika ss tidak tersedia atau sintaksnya beda)
+            pid=$(lsof -ti :"$LISTEN_PORT" -sTCP:LISTEN 2>/dev/null | head -1)
+        fi
+        echo "$pid"
+        return
+    fi
+
+    # Fallback: cari berdasarkan nama proses, ambil yang RSS terbesar
+    pgrep -x "$PROCESS_NAME" 2>/dev/null | while read -r pid; do
+        vmrss=$(awk '/^VmRSS:/{print $2}' "/proc/$pid/status" 2>/dev/null || echo 0)
+        echo "$vmrss $pid"
+    done | sort -rn | awk '{print $2; exit}'
 }
 
 # Ambil total CPU jiffies (utime+stime) dari /proc/$pid/stat
@@ -73,14 +86,15 @@ get_cpu_jiffies() {
     echo $(( ${fields[11]} + ${fields[12]} ))
 }
 
-# Ambil memory dalam MB dari /proc/$pid/status
-# Output: "vmsize_mb vmrss_mb"
+# Output: "rss_mb virt_mb"
+# rss_mb  = VmRSS  = physical memory (yang benar-benar dipakai di RAM)
+# virt_mb = VmSize = virtual address space (bisa sangat besar di node/java, tidak bermakna)
 get_mem_mb() {
     local pid=$1
     local status_file="/proc/$pid/status"
     [[ -f "$status_file" ]] || { echo "0 0"; return 1; }
-    awk '/^VmSize:/{vmsize=$2} /^VmRSS:/{vmrss=$2}
-         END{printf "%.2f %.2f\n", vmsize/1024, vmrss/1024}' "$status_file"
+    awk '/^VmRSS:/{rss=$2} /^VmSize:/{virt=$2}
+         END{printf "%.2f %.2f\n", rss/1024, virt/1024}' "$status_file"
 }
 
 print_summary() {
@@ -136,10 +150,19 @@ cleanup() {
 }
 trap cleanup INT TERM
 
+# Label untuk header
+if [[ -n "$LISTEN_PORT" ]]; then
+    target_label="port :$LISTEN_PORT ($PROCESS_NAME)"
+elif [[ $PROCESS_ID -gt 0 ]]; then
+    target_label="PID $PROCESS_ID"
+else
+    target_label="$PROCESS_NAME (by name)"
+fi
+
 echo ""
 echo "=================================================="
 echo "  CPU & Memory Monitor"
-echo "  Target Process : $PROCESS_NAME"
+echo "  Target         : $target_label"
 echo "  Output         : $OUTPUT_FILE"
 echo "  Interval       : ${INTERVAL_SEC}s | Durasi: ${DURATION_SEC}s"
 echo "  Ctrl+C untuk berhenti lebih awal"
@@ -155,9 +178,7 @@ while [[ $(date +%s) -lt $end_time ]]; do
     pid=$(find_pid)
 
     if [[ -z "$pid" ]]; then
-        label="'$PROCESS_NAME'"
-        [[ $PROCESS_ID -gt 0 ]] && label="PID $PROCESS_ID"
-        echo "[$timestamp] Proses $label tidak ditemukan, menunggu..."
+        echo "[$timestamp] Proses '$target_label' tidak ditemukan, menunggu..."
         sleep "$INTERVAL_SEC"
         continue
     fi
@@ -172,16 +193,17 @@ while [[ $(date +%s) -lt $end_time ]]; do
     fi
     prev_jiffies[$pid]=$jiffies
 
-    read -r vmsize_mb vmrss_mb < <(get_mem_mb "$pid")
+    # rss_mb = physical memory (bermakna), virt_mb = virtual (untuk referensi saja)
+    read -r rss_mb virt_mb < <(get_mem_mb "$pid")
     proc_name=$(cat "/proc/$pid/comm" 2>/dev/null || echo "$PROCESS_NAME")
 
-    echo "$timestamp,$cpu_percent,$vmsize_mb,$vmrss_mb,$proc_name" >> "$OUTPUT_FILE"
+    echo "$timestamp,$cpu_percent,$rss_mb,$virt_mb,$proc_name" >> "$OUTPUT_FILE"
     sample_count=$(( sample_count + 1 ))
 
     if (( sample_count % 5 == 0 )); then
-        echo "[$timestamp] CPU: ${cpu_percent}% | Mem: ${vmsize_mb} MB | WS: ${vmrss_mb} MB"
+        echo "[$timestamp] CPU: ${cpu_percent}% | RSS: ${rss_mb} MB | VM: ${virt_mb} MB  (PID $pid)"
     else
-        echo "[$timestamp] CPU: ${cpu_percent}% | Mem: ${vmsize_mb} MB"
+        echo "[$timestamp] CPU: ${cpu_percent}% | RSS: ${rss_mb} MB  (PID $pid)"
     fi
 
     sleep "$INTERVAL_SEC"

@@ -31,11 +31,17 @@ func ConnectSupabase() error {
 		return fmt.Errorf("SUPABASE_KEY is not set")
 	}
 
+	// Tuning untuk pattern: 1 backend tujuan (Supabase REST), banyak request paralel.
+	// HTTP/2 di-force agar request multiplex di 1 TCP connection (latency turun signifikan).
 	http.DefaultTransport = &http.Transport{
-		MaxIdleConns:        200,
-		MaxIdleConnsPerHost: 100,
-		IdleConnTimeout:     90 * time.Second,
-		TLSHandshakeTimeout: 10 * time.Second,
+		ForceAttemptHTTP2:     true,
+		MaxIdleConns:          100,
+		MaxIdleConnsPerHost:   100,
+		MaxConnsPerHost:       100,
+		IdleConnTimeout:       90 * time.Second,
+		TLSHandshakeTimeout:   10 * time.Second,
+		ExpectContinueTimeout: 1 * time.Second,
+		DisableCompression:    false,
 	}
 
 	client, err := supabase.NewClient(supaURL, supaKEY, &supabase.ClientOptions{})

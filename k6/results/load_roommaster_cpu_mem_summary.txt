@@ -1,7 +1,7 @@
 === CPU & MEMORY SUMMARY: load_roommaster ===
 Proses      : node
-Sampel      : 356
-CPU Avg     : 2.54 %
-CPU Max     : 16.8 %
-Mem Avg     : 337.19 MB
-Mem Max     : 500.62 MB
+Sampel      : 286
+CPU Avg     : 4.18 %
+CPU Max     : 13.38 %
+Mem Avg     : 456.80 MB
+Mem Max     : 657.23 MB

@@ -1,11 +1,11 @@
 package repository
 
 import (
-	"encoding/json"
 	"fmt"
 	"hotelbooking/internal/config"
 	"hotelbooking/internal/models"
 
+	json "github.com/goccy/go-json"
 	"github.com/supabase-community/postgrest-go"
 )
 

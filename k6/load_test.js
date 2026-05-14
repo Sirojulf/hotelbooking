@@ -119,6 +119,6 @@ export function handleSummary(data) {
   console.log("╚══════════════════════════════════════════════════╝\n");
 
   return {
-    [`results/load_${TARGET}.json`]: JSON.stringify(data, null, 2),
+    [`k6/results/load_${TARGET}.json`]: JSON.stringify(data, null, 2),
   };
 }

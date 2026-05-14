@@ -1,7 +1,7 @@
 === CPU & MEMORY SUMMARY: stress_roommaster ===
 Proses      : node
-Sampel      : 474
-CPU Avg     : 6.04 %
-CPU Max     : 48.83 %
-Mem Avg     : 1298.13 MB
-Mem Max     : 1995.52 MB
+Sampel      : 398
+CPU Avg     : 7.26 %
+CPU Max     : 44.25 %
+Mem Avg     : 1127.16 MB
+Mem Max     : 1779.92 MB

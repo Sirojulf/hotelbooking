@@ -1,7 +1,7 @@
 === CPU & MEMORY SUMMARY: spike_roommaster ===
 Proses      : node
-Sampel      : 237
-CPU Avg     : 3.04 %
-CPU Max     : 24.8 %
-Mem Avg     : 744.02 MB
-Mem Max     : 1029.53 MB
+Sampel      : 174
+CPU Avg     : 4.58 %
+CPU Max     : 19.38 %
+Mem Avg     : 665.32 MB
+Mem Max     : 836.72 MB

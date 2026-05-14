@@ -58,8 +58,9 @@ run_k6_test() {
         local monitor_script="$SCRIPT_DIR/monitor.sh"
         if [[ -x "$monitor_script" ]]; then
             "$monitor_script" \
-                --test-name "${TARGET}_${test_name}" \
+                --test-name "${test_name}_${TARGET}" \
                 --process-name "$PROCESS_NAME" \
+                --port "$SERVER_PORT" \
                 --duration 900 &
             monitor_pid=$!
             yellow "  Monitor CPU/Mem dimulai (PID: $monitor_pid)"
@@ -118,8 +119,10 @@ section "Persiapan Test — Target: $TARGET"
 
 if [[ "$TARGET" == "hotelbooking" ]]; then
     health_url="http://localhost:8080/health"
+    SERVER_PORT=8080
 else
     health_url="http://localhost:3000/api/health"
+    SERVER_PORT=3000
 fi
 
 if curl -sf --max-time 5 "$health_url" &>/dev/null; then

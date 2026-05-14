@@ -10,9 +10,9 @@ Dependensi:
 
 Output:
     k6/results/comparison_table.txt
-    k6/results/chart_success_requests.png
-    k6/results/chart_response_time.png
-    k6/results/chart_error_rate.png
+    k6/results/chart_resource.png    (CPU max + Memory avg)
+    k6/results/chart_latency.png     (HTTP p95 + Booking Flow p95)
+    k6/results/chart_throughput.png  (Total Requests + Req/s)
 """
 
 import json
@@ -293,169 +293,159 @@ if not HAS_MATPLOTLIB:
     sys.exit(0)
 
 COLORS = {"hotelbooking": "#2196F3", "roommaster": "#FF5722"}
+CHART_LABELS = {
+    "hotelbooking": "Go (hotelbooking)",
+    "roommaster": "Node.js (RoomMaster)",
+}
 X = list(range(len(TEST_TYPES)))
 BAR_W = 0.35
 
 
-CHARTS = [
-    # (metric_key,       title,                          xlabel,          ylabel,                    unit,  higher_is_better)
-    ("total_requests", "Total HTTP Requests", "Jenis Test", "Jumlah Request", "", True),
-    (
-        "req_per_sec",
-        "Throughput (Req/s)",
-        "Jenis Test",
-        "Request per Detik (rps)",
-        "",
-        True,
-    ),
-    ("error_rate_pct", "Error Rate", "Jenis Test", "Error Rate (%)", "%", False),
-    (
-        "success_rate_pct",
-        "Booking Success Rate",
-        "Jenis Test",
-        "Success Rate (%)",
-        "%",
-        True,
-    ),
-    (
-        "total_bookings",
-        "Total Booking Sukses",
-        "Jenis Test",
-        "Jumlah Booking",
-        "",
-        True,
-    ),
-    ("total_failed", "Total Booking Gagal", "Jenis Test", "Jumlah Gagal", "", False),
-    (
-        "http_p50_ms",
-        "HTTP Response Time P50",
-        "Jenis Test",
-        "Waktu Respons (ms)",
-        "ms",
-        False,
-    ),
-    (
-        "http_p95_ms",
-        "HTTP Response Time P95",
-        "Jenis Test",
-        "Waktu Respons (ms)",
-        "ms",
-        False,
-    ),
-    (
-        "http_p99_ms",
-        "HTTP Response Time P99",
-        "Jenis Test",
-        "Waktu Respons (ms)",
-        "ms",
-        False,
-    ),
-    (
-        "flow_p95_ms",
-        "Booking Flow Duration P95",
-        "Jenis Test",
-        "Durasi Flow (ms)",
-        "ms",
-        False,
-    ),
-    ("cpu_avg", "CPU Usage — Rata-rata", "Jenis Test", "CPU (%)", "%", False),
-    ("cpu_max", "CPU Usage — Maksimum", "Jenis Test", "CPU (%)", "%", False),
-    ("mem_avg", "Memory Usage — Rata-rata", "Jenis Test", "Memory (MB)", "MB", False),
-    ("mem_max", "Memory Usage — Maksimum", "Jenis Test", "Memory (MB)", "MB", False),
-]
-
-# ─── Satu gambar berisi semua subplot ────────────────────────────────────────
-NCOLS = 3
-NROWS = -(-len(CHARTS) // NCOLS)  # ceil division
-fig, axes = plt.subplots(NROWS, NCOLS, figsize=(NCOLS * 6, NROWS * 4.5))
-fig.suptitle(
-    "Perbandingan Kinerja API: Go (hotelbooking) vs Node.js (RoomMasterb)",
-    fontsize=14,
-    fontweight="bold",
-    y=1.01,
-)
-axes_flat = axes.flatten()
-
-for idx, (metric_key, title, xlabel, ylabel, unit, higher_is_better) in enumerate(
-    CHARTS
-):
-    ax = axes_flat[idx]
-
-    for i, target in enumerate(TARGETS):
-        vals = []
-        for test in TEST_TYPES:
-            r = results[target].get(test)
-            try:
-                raw_val = r[metric_key] if r else 0
-                v = (
-                    float(
-                        str(raw_val)
-                        .replace("%", "")
-                        .replace("ms", "")
-                        .replace("MB", "")
-                        .strip()
-                    )
-                    if raw_val not in (None, "N/A", "")
-                    else 0
-                )
-            except (TypeError, ValueError):
-                v = 0
-            vals.append(v)
-
-        offset = (i - 0.5) * BAR_W
-        bars = ax.bar(
-            [x + offset for x in X],
-            vals,
-            BAR_W,
-            label=TARGET_LABELS[target],
-            color=COLORS[target],
-            alpha=0.85,
+def get_val(target, test, metric_key):
+    """Ambil nilai metrik, bersihkan unit (%/ms/MB), return float."""
+    r = results[target].get(test)
+    try:
+        raw_val = r[metric_key] if r else 0
+        if raw_val in (None, "N/A", ""):
+            return 0.0
+        return float(
+            str(raw_val).replace("%", "").replace("ms", "").replace("MB", "").strip()
         )
-        for bar, v in zip(bars, vals):
-            if v > 0:
-                ax.text(
-                    bar.get_x() + bar.get_width() / 2,
-                    bar.get_height(),
-                    f"{v:.0f}{unit}",
-                    ha="center",
-                    va="bottom",
-                    fontsize=6.5,
-                )
+    except (TypeError, ValueError):
+        return 0.0
 
-    ax.set_title(title, fontsize=9, fontweight="bold", pad=6)
-    ax.set_xlabel(xlabel, fontsize=7.5, labelpad=4)
-    ax.set_ylabel(ylabel, fontsize=7.5, labelpad=4)
-    ax.set_xticks(X)
-    ax.set_xticklabels([t.capitalize() for t in TEST_TYPES], fontsize=8)
-    ax.tick_params(axis="y", labelsize=7)
-    ax.grid(axis="y", alpha=0.3, linestyle="--")
-    note = "↑ lebih baik" if higher_is_better else "↓ lebih baik"
-    ax.annotate(
-        note,
-        xy=(0.98, 0.97),
-        xycoords="axes fraction",
-        ha="right",
-        va="top",
-        fontsize=6,
-        color="gray",
-        style="italic",
+
+def draw_pair(filename, left, right):
+    """Buat 1 gambar berisi 2 subplot bersisian (left & right).
+
+    left/right = dict dengan keys:
+        metric_key, title, ylabel, unit, higher_is_better
+    """
+    fig, axes = plt.subplots(1, 2, figsize=(13, 5))
+
+    for ax, spec in zip(axes, [left, right]):
+        max_val = 0.0
+        for i, target in enumerate(TARGETS):
+            vals = [get_val(target, test, spec["metric_key"]) for test in TEST_TYPES]
+            max_val = max(max_val, *vals)
+            offset = (i - 0.5) * BAR_W
+            bars = ax.bar(
+                [x + offset for x in X],
+                vals,
+                BAR_W,
+                label=CHART_LABELS[target],
+                color=COLORS[target],
+                alpha=0.9,
+            )
+            for bar, v in zip(bars, vals):
+                if v > 0:
+                    ax.text(
+                        bar.get_x() + bar.get_width() / 2,
+                        bar.get_height(),
+                        f"{v:.0f}{spec['unit']}",
+                        ha="center",
+                        va="bottom",
+                        fontsize=9,
+                    )
+
+        # Headroom 18% di atas bar tertinggi agar label & annotation tidak tabrakan
+        if max_val > 0:
+            ax.set_ylim(0, max_val * 1.18)
+
+        ax.set_title(spec["title"], fontsize=13, fontweight="bold", pad=8)
+        ax.set_xlabel("Test Type", fontsize=10, labelpad=6)
+        ax.set_ylabel(spec["ylabel"], fontsize=10, labelpad=6)
+        ax.set_xticks(X)
+        ax.set_xticklabels([t.capitalize() for t in TEST_TYPES], fontsize=10)
+        ax.tick_params(axis="y", labelsize=9)
+        ax.grid(axis="y", alpha=0.3, linestyle="--")
+        note = "↑ better" if spec["higher_is_better"] else "↓ better"
+        ax.annotate(
+            note,
+            xy=(0.98, 0.97),
+            xycoords="axes fraction",
+            ha="right",
+            va="top",
+            fontsize=9,
+            color="gray",
+            style="italic",
+        )
+
+    handles = [
+        plt.Rectangle((0, 0), 1, 1, color=COLORS[t], alpha=0.9) for t in TARGETS
+    ]
+    labels = [CHART_LABELS[t] for t in TARGETS]
+    fig.legend(
+        handles,
+        labels,
+        loc="lower center",
+        ncol=2,
+        fontsize=10,
+        bbox_to_anchor=(0.5, -0.02),
     )
 
-# Sembunyikan subplot kosong (jika jumlah metrik tidak habis dibagi NCOLS)
-for idx in range(len(CHARTS), len(axes_flat)):
-    axes_flat[idx].set_visible(False)
+    plt.tight_layout(rect=[0, 0.06, 1, 1])
+    outpath = RESULT_DIR / filename
+    plt.savefig(outpath, dpi=150, bbox_inches="tight")
+    plt.close()
+    print(f"Chart disimpan: {outpath}")
 
-# Legend bersama di bawah gambar
-handles = [plt.Rectangle((0, 0), 1, 1, color=COLORS[t], alpha=0.85) for t in TARGETS]
-labels = [TARGET_LABELS[t] for t in TARGETS]
-fig.legend(
-    handles, labels, loc="lower center", ncol=2, fontsize=9, bbox_to_anchor=(0.5, -0.01)
+
+# ─── Gambar 1: Resource Usage (CPU max + Memory avg) ─────────────────────────
+draw_pair(
+    "chart_resource.png",
+    left={
+        "metric_key": "cpu_max",
+        "title": "CPU Usage (maximum)",
+        "ylabel": "CPU (%)",
+        "unit": "%",
+        "higher_is_better": False,
+    },
+    right={
+        "metric_key": "mem_avg",
+        "title": "Memory Usage (average)",
+        "ylabel": "Memory (MB)",
+        "unit": "MB",
+        "higher_is_better": False,
+    },
 )
 
-plt.tight_layout()
-outpath = RESULT_DIR / "chart_all_metrics.png"
-plt.savefig(outpath, dpi=150, bbox_inches="tight")
-plt.close()
-print(f"Chart disimpan: {outpath}")
+# ─── Gambar 2: Latency (HTTP p95 + Booking Flow p95) ─────────────────────────
+draw_pair(
+    "chart_latency.png",
+    left={
+        "metric_key": "http_p95_ms",
+        "title": "HTTP Response Time (p95)",
+        "ylabel": "Response Time (ms)",
+        "unit": "ms",
+        "higher_is_better": False,
+    },
+    right={
+        "metric_key": "flow_p95_ms",
+        "title": "Booking Flow Duration (p95)",
+        "ylabel": "Flow Duration (ms)",
+        "unit": "ms",
+        "higher_is_better": False,
+    },
+)
+
+# ─── Gambar 3: Throughput (Total Requests + Req/s) ───────────────────────────
+draw_pair(
+    "chart_throughput.png",
+    left={
+        "metric_key": "total_requests",
+        "title": "Total HTTP Requests",
+        "ylabel": "Number of Requests",
+        "unit": "",
+        "higher_is_better": True,
+    },
+    right={
+        "metric_key": "req_per_sec",
+        "title": "Throughput",
+        "ylabel": "Requests per Second",
+        "unit": "",
+        "higher_is_better": True,
+    },
+)
 
 print(f"\nSelesai! Semua file ada di: {RESULT_DIR}")

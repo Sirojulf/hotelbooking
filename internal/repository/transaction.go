@@ -1,16 +1,18 @@
 package repository
 
 import (
-	"encoding/json"
 	"fmt"
 	"hotelbooking/internal/config"
 	"hotelbooking/internal/models"
+
+	json "github.com/goccy/go-json"
 )
 
 type TransactionRepo interface {
 	CreateTransaction(tx models.Transaction) error
 	GetTransactionsByReservationID(reservationID string) ([]models.Transaction, error)
 	ListTransactionsByHotel(hotelID string) ([]models.Transaction, error)
+	DeleteByReservationID(reservationID string) error
 }
 
 type transactionRepo struct{}
@@ -47,6 +49,17 @@ func (r *transactionRepo) GetTransactionsByReservationID(reservationID string) (
 		return nil, err
 	}
 	return txs, nil
+}
+
+func (r *transactionRepo) DeleteByReservationID(reservationID string) error {
+	if config.SupabaseClient == nil {
+		return fmt.Errorf("supabase client is not initialized")
+	}
+	_, _, err := config.SupabaseClient.From("transactions").Delete("", "").Eq("reservation_id", reservationID).Execute()
+	if err != nil {
+		return fmt.Errorf("gagal menghapus transaksi: %v", err)
+	}
+	return nil
 }
 
 func (r *transactionRepo) ListTransactionsByHotel(hotelID string) ([]models.Transaction, error) {

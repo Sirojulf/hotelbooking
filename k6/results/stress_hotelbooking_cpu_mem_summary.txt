@@ -1,7 +1,7 @@
 === CPU & MEMORY SUMMARY: stress_hotelbooking ===
 Proses      : main
-Sampel      : 475
-CPU Avg     : 1.53 %
-CPU Max     : 7.81 %
-Mem Avg     : 27.2 MB
-Mem Max     : 33.89 MB
+Sampel      : 397
+CPU Avg     : 2.46 %
+CPU Max     : 10.00 %
+Mem Avg     : 27.45 MB
+Mem Max     : 30.35 MB
