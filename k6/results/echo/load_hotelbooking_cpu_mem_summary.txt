@@ -1,0 +1,7 @@
+=== CPU & MEMORY SUMMARY: load_hotelbooking ===
+Proses      : main
+Sampel      : 286
+CPU Avg     : 1.09 %
+CPU Max     : 3.25 %
+Mem Avg     : 24.70 MB
+Mem Max     : 26.28 MB
