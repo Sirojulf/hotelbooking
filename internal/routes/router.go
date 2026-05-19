@@ -1,10 +1,12 @@
 package routes
 
 import (
+	"hotelbooking/internal/ai"
 	"hotelbooking/internal/handler"
 	"hotelbooking/internal/middleware"
 	"hotelbooking/internal/repository"
 	"hotelbooking/internal/service"
+	"log"
 	"net/http"
 
 	"github.com/labstack/echo/v4"
@@ -41,12 +43,21 @@ func SetupRoutes(e *echo.Echo) {
 	// ======================
 	// HANDLERS
 	// ======================
+	// ─── AI Orchestrator (opsional — perlu OPENAI_API_KEY) ──────────────────
+	aiOrchestrator, err := ai.NewOrchestrator(guestSvc, reservationSvc, hotelRepo)
+	if err != nil {
+		log.Printf("AI orchestrator nonaktif: %v (endpoint /ai/book akan return 503)", err)
+		aiOrchestrator = nil
+	} else {
+		log.Println("AI orchestrator aktif (Function Calling agentic booking)")
+	}
+
 	adminHandler := handler.NewAdminHandler(profileSvc, reservationSvc)
 	guestHandler := handler.NewGuestHandler(guestSvc)
 	inventoryHandler := handler.NewInventoryHandler(inventorySvc)
 	bookingHandler := handler.NewBookingHandler(reservationSvc)
 	reportHandler := handler.NewReportHandler(reportSvc)
-	aiHandler := handler.NewAIHandler(aiSvc)
+	aiHandler := handler.NewAIHandler(aiSvc, aiOrchestrator)
 
 	// ======================
 	// PUBLIC ROUTES
@@ -72,6 +83,7 @@ func SetupRoutes(e *echo.Echo) {
 	guestGroup.POST("/reservations/:id/pay", bookingHandler.PayReservation)
 	guestGroup.POST("/reservations/:id/cancel", bookingHandler.CancelReservation)
 	guestGroup.GET("/reservations/:id/transactions", bookingHandler.GetTransactions)
+	guestGroup.POST("/ai/book", aiHandler.Book) // Agentic AI booking (Function Calling)
 
 	// ======================
 	// ADMIN PROTECTED ROUTES
