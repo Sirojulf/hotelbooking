@@ -1,0 +1,31 @@
+================================================================================
+  AI BOOKING vs DIRECT BOOKING — Trade-off Analysis
+================================================================================
+
+  [ LATENCY (end-to-end per booking) ]
+  ------------------------------------------------------------------------------
+  Metric                    AI Booking      Direct Booking       Ratio
+  ------------------------------------------------------------------------------
+  Avg                        13557 ms             945 ms      14.4×
+  Median                     12605 ms             910 ms      13.9×
+  P95                        18712 ms            1125 ms      16.6×
+  P99                        19846 ms            1508 ms      13.2×
+  Max                        20054 ms            1792 ms      11.2×
+
+  [ AI OVERHEAD ]
+  ------------------------------------------------------------------------------
+  OpenAI iterations (avg)      : 6.00  (max: 6)
+  Tool calls per booking (avg) : 5.16  (max: 7)
+  Success rate                 : 100.0%
+  Total: 25 sukses, 0 gagal
+
+  [ COST ESTIMATE (gpt-4o-mini) ]
+  ------------------------------------------------------------------------------
+  Asumsi: 1500 input + 200 output token/call
+  Pricing: $0.15/1M input, $0.6/1M output
+  Cost per OpenAI call         : ~$0.000345
+  Cost per AI booking          : ~$0.002070
+  Cost per 1.000 booking       : ~$2.070
+  Cost per 100.000 booking     : ~$207.00
+
+================================================================================

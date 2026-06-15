@@ -22,7 +22,18 @@ import { HOTELBOOKING, ROOMMASTER, getCheckInOut, pickRoom } from './config.js';
 
 const TARGET = __ENV.TARGET || 'hotelbooking';
 const LABEL  = __ENV.LABEL  || TARGET;   // pembeda nama file output (hotelbooking/purehttp/roommaster)
-const cfg = TARGET === 'roommaster' ? ROOMMASTER : HOTELBOOKING;
+const isRM = TARGET === 'roommaster';
+const cfg = isRM ? ROOMMASTER : HOTELBOOKING;
+
+// ─── Path & body helpers (beda antar target) ────────────────────────────────
+// hotelbooking:  /auth/guest/login  +  /guests/reservations/{id}/[pay|cancel]
+// roommaster:    /auth/login        +  /reservations/{id}/[pay|cancel]
+const PATHS = {
+  login:        isRM ? '/auth/login'    : '/auth/guest/login',
+  create:       isRM ? '/reservations'  : '/guests/reservations',
+  pay:    (id) => isRM ? `/reservations/${id}/pay`    : `/guests/reservations/${id}/pay`,
+  cancel: (id) => isRM ? `/reservations/${id}/cancel` : `/guests/reservations/${id}/cancel`,
+};
 
 // ─── Per-endpoint Trend metrics ──────────────────────────────────────────────
 const tAvail  = new Trend('ep_check_availability_ms', true);
@@ -48,17 +59,15 @@ export const options = {
 
 // ─── Setup: login sekali, share token ke semua VU ────────────────────────────
 export function setup() {
-  const isHB = TARGET === 'hotelbooking';
-  const loginURL = isHB ? `${cfg.baseURL}/auth/guest/login` : `${cfg.baseURL}/auth/login`;
-  const loginBody = isHB
-    ? { login: cfg.email, password: cfg.password }
-    : { email: cfg.email, password: cfg.password };
+  const loginBody = isRM
+    ? { email: cfg.email, password: cfg.password }
+    : { login: cfg.email, password: cfg.password };
 
-  const res = http.post(loginURL, JSON.stringify(loginBody), {
+  const res = http.post(`${cfg.baseURL}${PATHS.login}`, JSON.stringify(loginBody), {
     headers: { 'Content-Type': 'application/json' },
   });
   if (res.status !== 200) {
-    console.error(`[setup] Login gagal: ${res.status}`);
+    console.error(`[setup] Login gagal: ${res.status} ${res.body}`);
     return { token: null };
   }
   return { token: res.json('access_token') };
@@ -86,18 +95,27 @@ export default function (data) {
   rAvail.add(res.status === 200);
 
   // 2. CREATE RESERVATION ─────────────────────────────────────────────────────
+  const createBody = isRM
+    ? {
+        room_id: roomId,
+        check_in: checkIn,
+        check_out: checkOut,
+        special_requests: 'endpoint breakdown',
+      }
+    : {
+        hotel_id: cfg.hotelId,
+        room_id: roomId,
+        check_in: checkIn,
+        check_out: checkOut,
+        booking_source: 'online',
+        payment_method: 'transfer',
+        special_requests: 'endpoint breakdown',
+      };
+
   t0 = Date.now();
   res = http.post(
-    `${cfg.baseURL}/guests/reservations`,
-    JSON.stringify({
-      hotel_id: cfg.hotelId || undefined,
-      room_id: roomId,
-      check_in: checkIn,
-      check_out: checkOut,
-      booking_source: 'online',
-      payment_method: 'transfer',
-      special_requests: 'endpoint breakdown',
-    }),
+    `${cfg.baseURL}${PATHS.create}`,
+    JSON.stringify(createBody),
     { headers, tags: { endpoint: 'create_reservation' } },
   );
   tCreate.add(Date.now() - t0);
@@ -114,20 +132,22 @@ export default function (data) {
     return;
   }
 
-  // 3. PAY RESERVATION ────────────────────────────────────────────────────────
-  t0 = Date.now();
-  res = http.post(
-    `${cfg.baseURL}/guests/reservations/${reservationId}/pay`,
-    JSON.stringify({ payment_method: 'transfer' }),
-    { headers, tags: { endpoint: 'pay_reservation' } },
-  );
-  tPay.add(Date.now() - t0);
-  rPay.add(res.status === 200);
+  // 3. PAY RESERVATION (skip untuk roommaster karena tidak ada endpoint pay) ──
+  if (PATHS.pay(reservationId)) {
+    t0 = Date.now();
+    res = http.post(
+      `${cfg.baseURL}${PATHS.pay(reservationId)}`,
+      JSON.stringify({ payment_method: 'transfer' }),
+      { headers, tags: { endpoint: 'pay_reservation' } },
+    );
+    tPay.add(Date.now() - t0);
+    rPay.add(res.status === 200);
+  }
 
   // 4. CANCEL RESERVATION ─────────────────────────────────────────────────────
   t0 = Date.now();
   res = http.post(
-    `${cfg.baseURL}/guests/reservations/${reservationId}/cancel`,
+    `${cfg.baseURL}${PATHS.cancel(reservationId)}`,
     null,
     { headers, tags: { endpoint: 'cancel_reservation' } },
   );

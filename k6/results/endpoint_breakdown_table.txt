@@ -2,15 +2,37 @@
   ENDPOINT BREAKDOWN — direct booking flow
 ========================================================================================
 
+  Target: Go net/http
+  --------------------------------------------------------------------------------------
+  Endpoint                     Avg       Med       P90       P95       P99       Max     OK%
+  --------------------------------------------------------------------------------------
+  check_availability         154ms     130ms     181ms     298ms     747ms     789ms  100.0%
+  create_reservation         270ms     260ms     291ms     322ms     403ms     413ms  100.0%
+  pay_reservation            532ms     517ms     561ms     615ms     798ms     879ms  100.0%
+  cancel_reservation         541ms     516ms     568ms     642ms    1054ms    1206ms  100.0%
+  --------------------------------------------------------------------------------------
+  ➜ Endpoint terberat (P95): cancel_reservation  (642 ms, 34.2% dari total flow)
+
   Target: Go echo
   --------------------------------------------------------------------------------------
   Endpoint                     Avg       Med       P90       P95       P99       Max     OK%
   --------------------------------------------------------------------------------------
-  check_availability         172ms     135ms     197ms     329ms     761ms     813ms  100.0%
-  create_reservation         324ms     306ms     400ms     460ms     637ms    1133ms  100.0%
-  pay_reservation            635ms     607ms     748ms     813ms    1069ms    1213ms  100.0%
-  cancel_reservation         642ms     610ms     750ms     866ms    1451ms    1639ms  100.0%
+  check_availability         151ms     130ms     161ms     269ms     516ms     621ms  100.0%
+  create_reservation         269ms     261ms     289ms     299ms     391ms     477ms  100.0%
+  pay_reservation            525ms     519ms     546ms     558ms     601ms     694ms  100.0%
+  cancel_reservation         531ms     518ms     558ms     610ms     739ms     840ms  100.0%
   --------------------------------------------------------------------------------------
-  ➜ Endpoint terberat (P95): cancel_reservation  (866 ms, 35.1% dari total flow)
+  ➜ Endpoint terberat (P95): cancel_reservation  (610 ms, 35.2% dari total flow)
+
+  Target: Node.js
+  --------------------------------------------------------------------------------------
+  Endpoint                     Avg       Med       P90       P95       P99       Max     OK%
+  --------------------------------------------------------------------------------------
+  check_availability         290ms     271ms     291ms     304ms     911ms     924ms  100.0%
+  create_reservation         698ms     675ms     704ms     775ms    1333ms    1615ms   99.3%
+  pay_reservation            817ms     808ms     835ms     866ms     970ms    1132ms  100.0%
+  cancel_reservation         139ms     137ms     144ms     148ms     165ms     234ms  100.0%
+  --------------------------------------------------------------------------------------
+  ➜ Endpoint terberat (P95): pay_reservation  (866 ms, 41.4% dari total flow)
 
 ========================================================================================
