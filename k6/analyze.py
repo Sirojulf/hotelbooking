@@ -1,48 +1,51 @@
-"""
-analyze.py — Bandingkan hasil k6 antara hotelbooking (Go) dan RoomMasterb
-Menghasilkan tabel perbandingan dan chart bar seperti di referensi PDF.
+"""Compare k6 results for hotelbooking (Go) and RoomMaster (Node.js).
 
-Cara pakai:
-    python k6/analyze.py
+The charts follow common IEEE figure conventions: two-column width, compact
+serif typography, grayscale-safe bar patterns, and vector PDF output. A
+600-dpi PNG copy is also generated for workflows that require raster images.
 
-Dependensi:
-    pip install matplotlib pandas
+Usage:
+    python3 analyze.py
+
+Dependency:
+    pip install matplotlib
 
 Output:
-    k6/results/comparison_table.txt
-    k6/results/chart_resource.png    (CPU max + Memory avg)
-    k6/results/chart_latency.png     (HTTP p95 + Booking Flow p95)
-    k6/results/chart_throughput.png  (Total Requests + Req/s)
+    results/comparison_table.txt
+    results/chart_resource.{pdf,png}
+    results/chart_latency.{pdf,png}
+    results/chart_throughput.{pdf,png}
 """
 
+import contextlib
+import io
 import json
-import os
 import sys
 from pathlib import Path
 
 RESULT_DIR = Path(__file__).parent / "results"
 
-# ─── Coba import matplotlib ───────────────────────────────────────────────────
+# Matplotlib is optional so the text report can still be generated on servers.
 try:
     import matplotlib
 
     matplotlib.use("Agg")  # non-interactive backend
-    import matplotlib.patches as mpatches
     import matplotlib.pyplot as plt
 
     HAS_MATPLOTLIB = True
 except ImportError:
     HAS_MATPLOTLIB = False
-    print("INFO: matplotlib tidak terinstall. Hanya tabel teks yang akan dibuat.")
-    print("      Install dengan: pip install matplotlib")
+    print("INFO: matplotlib is not installed; only the text table will be created.")
+    print("      Install it with: pip install matplotlib")
 
 
-# ─── Load JSON hasil k6 ───────────────────────────────────────────────────────
+# Load k6 JSON results.
 def load_k6_result(filepath: Path) -> dict:
-    """Baca file JSON output k6 dan ekstrak metrik utama.
-    Mendukung dua format:
-      - Summary JSON  : dari handleSummary() di script k6 (format yang benar)
-      - NDJSON        : dari flag --out json= (satu objek per baris, format lama)
+    """Read a k6 result and extract the metrics used in the report.
+
+    Supported formats:
+      - Summary JSON produced by handleSummary()
+      - NDJSON produced by --out json= (legacy fallback)
     """
     if not filepath.exists():
         return None
@@ -51,18 +54,15 @@ def load_k6_result(filepath: Path) -> dict:
     if not raw:
         return None
 
-    # Coba parse sebagai single JSON dulu (format summary dari handleSummary)
+    # Try the handleSummary() JSON format first.
     try:
         data = json.loads(raw)
         if "metrics" not in data:
-            print(f"WARN: {filepath.name} tidak punya key 'metrics', dilewati.")
+            print(f"WARNING: {filepath.name} has no 'metrics' key; skipping it.")
             return None
         metrics = data["metrics"]
     except json.JSONDecodeError:
-        # Fallback: NDJSON (--out json= format) — agregasi manual dari tiap baris
-        print(
-            f"INFO: {filepath.name} terdeteksi format NDJSON (dari --out json=), parsing..."
-        )
+        print(f"INFO: detected NDJSON in {filepath.name}; parsing the data points.")
         metrics = _parse_ndjson(raw, filepath)
         if metrics is None:
             return None
@@ -84,14 +84,14 @@ def load_k6_result(filepath: Path) -> dict:
     }
 
 
-def _parse_ndjson(raw: str, filepath: Path) -> dict | None:
-    """Parse format NDJSON dari k6 --out json= dan bentuk struktur metrics sederhana."""
+def _parse_ndjson(raw: str, _filepath: Path) -> dict | None:
+    """Convert k6 NDJSON data points into a small summary structure."""
     import math
     from collections import defaultdict
 
-    counts = defaultdict(float)  # metric_name -> total count
-    rates = defaultdict(list)  # metric_name -> list of rate values
-    durations = defaultdict(list)  # metric_name -> list of duration values (ms)
+    counts = defaultdict(float)
+    rates = defaultdict(list)
+    durations = defaultdict(list)
     failed_count = 0
     total_reqs = 0
 
@@ -129,7 +129,6 @@ def _parse_ndjson(raw: str, filepath: Path) -> dict | None:
         return s[max(0, idx)]
 
     duration_secs = 1.0
-    # Estimasi durasi dari jumlah data points (rough)
     http_dur = durations.get("http_req_duration", [])
 
     metrics = {
@@ -146,7 +145,7 @@ def _parse_ndjson(raw: str, filepath: Path) -> dict | None:
         },
         "http_req_duration": {
             "values": {
-                "p(50)": percentile(http_dur, 50),
+                "med": percentile(http_dur, 50),
                 "p(95)": percentile(http_dur, 95),
                 "p(99)": percentile(http_dur, 99),
             }
@@ -171,13 +170,14 @@ def _parse_ndjson(raw: str, filepath: Path) -> dict | None:
     }
 
     print(
-        f"  WARN: NDJSON tidak menyimpan req/rate akurat. Jalankan ulang test tanpa --out json= untuk hasil terbaik."
+        "  WARNING: request rate cannot be reconstructed accurately from this "
+        "NDJSON file. Run the test again with handleSummary() for an exact value."
     )
     return metrics
 
 
 def load_monitor_summary(test_name: str, target: str) -> dict:
-    """Baca file ringkasan CPU/Mem dari monitor.ps1."""
+    """Read CPU and memory metrics produced by the monitoring script."""
     filepath = RESULT_DIR / f"{test_name}_{target}_cpu_mem_summary.txt"
     result = {"cpu_avg": "N/A", "cpu_max": "N/A", "mem_avg": "N/A", "mem_max": "N/A"}
     if not filepath.exists():
@@ -194,12 +194,12 @@ def load_monitor_summary(test_name: str, target: str) -> dict:
     return result
 
 
-# ─── Kumpulkan semua data ─────────────────────────────────────────────────────
+# Collect all available results.
 TARGETS = ["hotelbooking", "roommaster"]
 TEST_TYPES = ["load", "spike", "stress"]
 TARGET_LABELS = {
     "hotelbooking": "Go (hotelbooking)",
-    "roommaster": "Node.js (RoomMasterb)",
+    "roommaster": "Node.js (RoomMaster)",
 }
 
 results = {}
@@ -216,39 +216,39 @@ for target in TARGETS:
             results[target][test] = None
 
 
-# ─── Print tabel teks ─────────────────────────────────────────────────────────
+# Print the text report.
 def print_table():
     sep = "=" * 90
     sep2 = "-" * 90
 
     print(f"\n{sep}")
-    print(f"  TABEL PERBANDINGAN KINERJA: hotelbooking (Go) vs RoomMasterb (Node.js)")
+    print("  PERFORMANCE COMPARISON: hotelbooking (Go) vs RoomMaster (Node.js)")
     print(f"{sep}")
 
     for test in TEST_TYPES:
         print(f"\n  [ {test.upper()} TESTING ]")
         print(f"  {sep2}")
         header = (
-            f"  {'Metrik':<30} {'Go (hotelbooking)':>22} {'Node.js (RoomMasterb)':>22}"
+            f"  {'Metric':<30} {'Go (hotelbooking)':>22} {'Node.js (RoomMaster)':>22}"
         )
         print(header)
         print(f"  {sep2}")
 
         metrics_list = [
             ("Total HTTP Requests", "total_requests", ""),
-            ("Req / detik", "req_per_sec", "rps"),
-            ("Error Rate", "error_rate_pct", "%"),
-            ("Booking Success Rate", "success_rate_pct", "%"),
-            ("Total Booking Sukses", "total_bookings", ""),
-            ("Total Booking Gagal", "total_failed", ""),
-            ("HTTP Response P50", "http_p50_ms", "ms"),
-            ("HTTP Response P95", "http_p95_ms", "ms"),
-            ("HTTP Response P99", "http_p99_ms", "ms"),
-            ("Flow Duration P95", "flow_p95_ms", "ms"),
-            ("CPU Rata-rata", "cpu_avg", ""),
-            ("CPU Maksimum", "cpu_max", ""),
-            ("Memory Rata-rata", "mem_avg", ""),
-            ("Memory Maksimum", "mem_max", ""),
+            ("Requests per Second", "req_per_sec", " rps"),
+            ("Error Rate", "error_rate_pct", " %"),
+            ("Booking Success Rate", "success_rate_pct", " %"),
+            ("Successful Bookings", "total_bookings", ""),
+            ("Failed Bookings", "total_failed", ""),
+            ("HTTP Response P50", "http_p50_ms", " ms"),
+            ("HTTP Response P95", "http_p95_ms", " ms"),
+            ("HTTP Response P99", "http_p99_ms", " ms"),
+            ("Flow Duration P95", "flow_p95_ms", " ms"),
+            ("Average CPU Usage", "cpu_avg", ""),
+            ("Maximum CPU Usage", "cpu_max", ""),
+            ("Average Memory Usage", "mem_avg", ""),
+            ("Maximum Memory Usage", "mem_max", ""),
         ]
 
         for label, key, unit in metrics_list:
@@ -275,34 +275,61 @@ def print_table():
 
 print_table()
 
-# Simpan tabel ke file
+# Save the text report.
 table_file = RESULT_DIR / "comparison_table.txt"
 RESULT_DIR.mkdir(exist_ok=True)
-import contextlib
-import io
-
 buf = io.StringIO()
 with contextlib.redirect_stdout(buf):
     print_table()
 table_file.write_text(buf.getvalue())
-print(f"Tabel disimpan ke: {table_file}")
+print(f"Table saved to: {table_file}")
 
-# ─── Buat chart ───────────────────────────────────────────────────────────────
+# Create the figures.
 if not HAS_MATPLOTLIB:
-    print("Selesai (tanpa chart).")
+    print("Done (charts were not generated).")
     sys.exit(0)
 
-COLORS = {"hotelbooking": "#2196F3", "roommaster": "#FF5722"}
-CHART_LABELS = {
-    "hotelbooking": "Go (hotelbooking)",
-    "roommaster": "Node.js (RoomMaster)",
-}
+IEEE_DOUBLE_COLUMN_WIDTH = 7.16
+IEEE_FIGURE_HEIGHT = 2.85
+PNG_DPI = 600
+
+# Colorblind-safe colors plus distinct hatches preserve meaning in grayscale.
+COLORS = {"hotelbooking": "#0072B2", "roommaster": "#D55E00"}
+HATCHES = {"hotelbooking": "////", "roommaster": "\\\\\\\\"}
+CHART_LABELS = TARGET_LABELS
 X = list(range(len(TEST_TYPES)))
-BAR_W = 0.35
+BAR_W = 0.34
+
+plt.rcParams.update(
+    {
+        "font.family": "serif",
+        "font.serif": [
+            "Liberation Serif",
+            "Times New Roman",
+            "Times",
+            "DejaVu Serif",
+        ],
+        "font.size": 8,
+        "axes.titlesize": 8,
+        "axes.labelsize": 8,
+        "xtick.labelsize": 7,
+        "ytick.labelsize": 7,
+        "legend.fontsize": 7,
+        "axes.linewidth": 0.6,
+        "lines.linewidth": 0.8,
+        "patch.linewidth": 0.6,
+        "figure.facecolor": "white",
+        "axes.facecolor": "white",
+        "savefig.facecolor": "white",
+        "pdf.fonttype": 42,
+        "ps.fonttype": 42,
+        "mathtext.fontset": "stix",
+    }
+)
 
 
 def get_val(target, test, metric_key):
-    """Ambil nilai metrik, bersihkan unit (%/ms/MB), return float."""
+    """Return a metric as a float after removing units from monitor data."""
     r = results[target].get(test)
     try:
         raw_val = r[metric_key] if r else 0
@@ -315,15 +342,31 @@ def get_val(target, test, metric_key):
         return 0.0
 
 
-def draw_pair(filename, left, right):
-    """Buat 1 gambar berisi 2 subplot bersisian (left & right).
+def format_value(value: float, style: str) -> str:
+    """Format compact bar labels without repeating the axis unit."""
+    if style == "decimal":
+        return f"{value:.1f}"
+    if style == "integer":
+        return f"{value:,.0f}"
+    if abs(value) >= 1000:
+        return f"{value / 1000:.1f}k"
+    return f"{value:.0f}"
 
-    left/right = dict dengan keys:
-        metric_key, title, ylabel, unit, higher_is_better
+
+def draw_pair(basename, left, right):
+    """Create a publication-ready IEEE two-column figure with two panels.
+
+    ``left`` and ``right`` define metric_key, title, ylabel, and value_format.
+    The PDF is the preferred LaTeX asset; PNG is provided as a raster fallback.
     """
-    fig, axes = plt.subplots(1, 2, figsize=(13, 5))
+    fig, axes = plt.subplots(
+        1,
+        2,
+        figsize=(IEEE_DOUBLE_COLUMN_WIDTH, IEEE_FIGURE_HEIGHT),
+        sharex=True,
+    )
 
-    for ax, spec in zip(axes, [left, right]):
+    for panel_index, (ax, spec) in enumerate(zip(axes, [left, right])):
         max_val = 0.0
         for i, target in enumerate(TARGETS):
             vals = [get_val(target, test, spec["metric_key"]) for test in TEST_TYPES]
@@ -335,117 +378,122 @@ def draw_pair(filename, left, right):
                 BAR_W,
                 label=CHART_LABELS[target],
                 color=COLORS[target],
-                alpha=0.9,
+                edgecolor="black",
+                linewidth=0.5,
+                hatch=HATCHES[target],
+                zorder=3,
             )
             for bar, v in zip(bars, vals):
                 if v > 0:
                     ax.text(
                         bar.get_x() + bar.get_width() / 2,
                         bar.get_height(),
-                        f"{v:.0f}{spec['unit']}",
+                        format_value(v, spec.get("value_format", "auto")),
                         ha="center",
                         va="bottom",
-                        fontsize=9,
+                        fontsize=6.5,
+                        rotation=0,
+                        clip_on=False,
                     )
 
-        # Headroom 18% di atas bar tertinggi agar label & annotation tidak tabrakan
+        # Reserve enough headroom for value labels at final publication size.
         if max_val > 0:
-            ax.set_ylim(0, max_val * 1.18)
+            ax.set_ylim(0, max_val * 1.22)
 
-        ax.set_title(spec["title"], fontsize=13, fontweight="bold", pad=8)
-        ax.set_xlabel("Test Type", fontsize=10, labelpad=6)
-        ax.set_ylabel(spec["ylabel"], fontsize=10, labelpad=6)
+        panel_letter = chr(ord("a") + panel_index)
+        ax.set_title(f"({panel_letter}) {spec['title']}", fontweight="normal", pad=4)
+        ax.set_xlabel("Workload")
+        ax.set_ylabel(spec["ylabel"])
         ax.set_xticks(X)
-        ax.set_xticklabels([t.capitalize() for t in TEST_TYPES], fontsize=10)
-        ax.tick_params(axis="y", labelsize=9)
-        ax.grid(axis="y", alpha=0.3, linestyle="--")
-        note = "↑ better" if spec["higher_is_better"] else "↓ better"
-        ax.annotate(
-            note,
-            xy=(0.98, 0.97),
-            xycoords="axes fraction",
-            ha="right",
-            va="top",
-            fontsize=9,
-            color="gray",
-            style="italic",
-        )
+        ax.set_xticklabels([t.capitalize() for t in TEST_TYPES])
+        ax.tick_params(axis="both", direction="out", length=2.5, width=0.6)
+        ax.grid(axis="y", color="#BFBFBF", linewidth=0.45, linestyle=":", zorder=0)
+        ax.spines["top"].set_visible(False)
+        ax.spines["right"].set_visible(False)
 
     handles = [
-        plt.Rectangle((0, 0), 1, 1, color=COLORS[t], alpha=0.9) for t in TARGETS
+        plt.Rectangle(
+            (0, 0),
+            1,
+            1,
+            facecolor=COLORS[target],
+            edgecolor="black",
+            linewidth=0.5,
+            hatch=HATCHES[target],
+        )
+        for target in TARGETS
     ]
     labels = [CHART_LABELS[t] for t in TARGETS]
     fig.legend(
         handles,
         labels,
-        loc="lower center",
+        loc="upper center",
         ncol=2,
-        fontsize=10,
-        bbox_to_anchor=(0.5, -0.02),
+        frameon=False,
+        handlelength=1.8,
+        columnspacing=1.5,
+        bbox_to_anchor=(0.5, 0.995),
     )
 
-    plt.tight_layout(rect=[0, 0.06, 1, 1])
-    outpath = RESULT_DIR / filename
-    plt.savefig(outpath, dpi=150, bbox_inches="tight")
+    fig.subplots_adjust(left=0.09, right=0.99, bottom=0.19, top=0.80, wspace=0.28)
+    output_paths = []
+    for extension, dpi in (("pdf", None), ("png", PNG_DPI)):
+        outpath = RESULT_DIR / f"{basename}.{extension}"
+        fig.savefig(outpath, dpi=dpi, metadata={"Creator": "analyze.py"})
+        output_paths.append(outpath)
     plt.close()
-    print(f"Chart disimpan: {outpath}")
+    print(f"Figures saved: {output_paths[0]} and {output_paths[1]}")
 
 
-# ─── Gambar 1: Resource Usage (CPU max + Memory avg) ─────────────────────────
+# Figure 1: resource usage (maximum CPU and average memory).
 draw_pair(
-    "chart_resource.png",
+    "chart_resource",
     left={
         "metric_key": "cpu_max",
         "title": "CPU Usage (maximum)",
         "ylabel": "CPU (%)",
-        "unit": "%",
-        "higher_is_better": False,
+        "value_format": "decimal",
     },
     right={
         "metric_key": "mem_avg",
         "title": "Memory Usage (average)",
         "ylabel": "Memory (MB)",
-        "unit": "MB",
-        "higher_is_better": False,
+        "value_format": "integer",
     },
 )
 
-# ─── Gambar 2: Latency (HTTP p95 + Booking Flow p95) ─────────────────────────
+# Figure 2: HTTP and booking-flow latency.
 draw_pair(
-    "chart_latency.png",
+    "chart_latency",
     left={
         "metric_key": "http_p95_ms",
-        "title": "HTTP Response Time (p95)",
+        "title": "HTTP P95 Latency",
         "ylabel": "Response Time (ms)",
-        "unit": "ms",
-        "higher_is_better": False,
+        "value_format": "integer",
     },
     right={
         "metric_key": "flow_p95_ms",
-        "title": "Booking Flow Duration (p95)",
+        "title": "Booking-Flow P95 Latency",
         "ylabel": "Flow Duration (ms)",
-        "unit": "ms",
-        "higher_is_better": False,
+        "value_format": "integer",
     },
 )
 
-# ─── Gambar 3: Throughput (Total Requests + Req/s) ───────────────────────────
+# Figure 3: total requests and throughput.
 draw_pair(
-    "chart_throughput.png",
+    "chart_throughput",
     left={
         "metric_key": "total_requests",
         "title": "Total HTTP Requests",
         "ylabel": "Number of Requests",
-        "unit": "",
-        "higher_is_better": True,
+        "value_format": "compact",
     },
     right={
         "metric_key": "req_per_sec",
         "title": "Throughput",
-        "ylabel": "Requests per Second",
-        "unit": "",
-        "higher_is_better": True,
+        "ylabel": "Throughput (requests/s)",
+        "value_format": "decimal",
     },
 )
 
-print(f"\nSelesai! Semua file ada di: {RESULT_DIR}")
+print(f"\nDone. All output files are in: {RESULT_DIR}")

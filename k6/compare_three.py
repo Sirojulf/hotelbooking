@@ -1,19 +1,23 @@
-"""
-compare_three.py — Komparasi 3-arah hasil k6:
-    - pure net/http (biru muda)
-    - Echo          (biru tua)
-    - Node.js       (hijau)
+"""Compare k6 results for Go net/http, Go Echo, and Node.js.
 
-Menghasilkan tabel teks + 3 chart PNG.
+The charts follow common IEEE figure conventions: two-column width, compact
+serif typography, grayscale-safe bar patterns, and vector PDF output. The
+existing series colors are preserved exactly. A 600-dpi PNG copy is generated
+for workflows that require raster images.
 
-Prasyarat — hasil k6 sudah di-backup ke folder berikut:
-    k6/results/purehttp/{load,spike,stress}_hotelbooking.json   (+ _cpu_mem_summary.txt)
-    k6/results/echo/{load,spike,stress}_hotelbooking.json       (+ _cpu_mem_summary.txt)
-    k6/results/{load,spike,stress}_roommaster.json              (+ _cpu_mem_summary.txt)
-        (atau di k6/results/nodejs/ kalau di-backup terpisah)
+Expected input:
+    results/purehttp/{load,spike,stress}_hotelbooking.json
+    results/echo/{load,spike,stress}_hotelbooking.json
+    results/{load,spike,stress}_roommaster.json
 
-Cara pakai:
-    python3 k6/compare_three.py
+Usage:
+    python3 compare_three.py
+
+Output:
+    results/comparison_three.txt
+    results/chart3_resource.{pdf,png}
+    results/chart3_latency.{pdf,png}
+    results/chart3_throughput.{pdf,png}
 """
 import json
 import math
@@ -23,17 +27,17 @@ from pathlib import Path
 RESULT_DIR = Path(__file__).parent / "results"
 TESTS = ["load", "spike", "stress"]
 
-# (label, warna, folder, suffix)  — folder relatif ke RESULT_DIR
+# Label, color, folder relative to RESULT_DIR, and file suffix.
 SOURCES = [
-    ("Go net/http", "#42A5F5", "purehttp", "hotelbooking"),  # biru muda
-    ("Go echo", "#0D47A1", "echo", "hotelbooking"),          # biru tua
-    ("Node.js", "#4CAF50", "nodejs", "roommaster"),          # hijau
+    ("Go net/http", "#42A5F5", "purehttp", "hotelbooking"),
+    ("Go Echo", "#0D47A1", "echo", "hotelbooking"),
+    ("Node.js", "#4CAF50", "nodejs", "roommaster"),
 ]
 
 
-# ─── Parser hasil k6 ─────────────────────────────────────────────────────────
+# Parse k6 results.
 def parse_k6_result(filepath):
-    """Coba format summary JSON dulu, fallback ke NDJSON."""
+    """Read handleSummary() JSON, falling back to legacy NDJSON."""
     if not filepath.exists():
         return None
     raw = filepath.read_text().strip()
@@ -98,7 +102,7 @@ def _from_ndjson(raw):
 
     return {
         "total_reqs": total_reqs,
-        "req_per_sec": 0,  # tidak akurat dari NDJSON
+        "req_per_sec": 0,  # Request rate cannot be recovered from NDJSON.
         "error_rate": (failed / total_reqs * 100) if total_reqs else 0,
         "success_rate": (sum(succ_rates) / len(succ_rates) * 100) if succ_rates else 0,
         "p50": pct(durations, 50),
@@ -109,7 +113,7 @@ def _from_ndjson(raw):
 
 
 def read_monitor(folder, test, suffix):
-    """Baca CPU/Mem summary. Fallback: folder utama kalau subfolder tidak ada."""
+    """Read CPU/memory data, falling back to the main results directory."""
     candidates = [
         RESULT_DIR / folder / f"{test}_{suffix}_cpu_mem_summary.txt",
         RESULT_DIR / f"{test}_{suffix}_cpu_mem_summary.txt",
@@ -126,7 +130,13 @@ def read_monitor(folder, test, suffix):
                 ("mem_max", "Mem Max"),
             ):
                 if tag in line:
-                    num = line.split(":")[-1].strip().replace("%", "").replace("MB", "").strip()
+                    num = (
+                        line.split(":")[-1]
+                        .strip()
+                        .replace("%", "")
+                        .replace("MB", "")
+                        .strip()
+                    )
                     try:
                         res[key] = float(num)
                     except ValueError:
@@ -136,7 +146,7 @@ def read_monitor(folder, test, suffix):
 
 
 def load_result(folder, test, suffix):
-    """Ambil hasil k6. Coba subfolder dulu, fallback ke folder utama."""
+    """Load a k6 result from its subfolder or the main results directory."""
     candidates = [
         RESULT_DIR / folder / f"{test}_{suffix}.json",
         RESULT_DIR / f"{test}_{suffix}.json",
@@ -149,8 +159,7 @@ def load_result(folder, test, suffix):
     return None
 
 
-# ─── Kumpulkan semua data ────────────────────────────────────────────────────
-# data[test][label] = dict metrik
+# Collect all available data as data[test][label].
 data = {}
 for test in TESTS:
     data[test] = {}
@@ -158,7 +167,7 @@ for test in TESTS:
         data[test][label] = load_result(folder, test, suffix)
 
 
-# ─── Tabel teks ──────────────────────────────────────────────────────────────
+# Build the text report.
 def fmt(v, unit=""):
     if v is None:
         return "N/A"
@@ -169,17 +178,17 @@ def fmt(v, unit=""):
 
 METRIC_ROWS = [
     ("Total HTTP Requests", "total_reqs", ""),
-    ("Req / detik", "req_per_sec", " rps"),
-    ("Error Rate", "error_rate", "%"),
-    ("Booking Success Rate", "success_rate", "%"),
+    ("Requests per Second", "req_per_sec", " rps"),
+    ("Error Rate", "error_rate", " %"),
+    ("Booking Success Rate", "success_rate", " %"),
     ("HTTP P50", "p50", " ms"),
     ("HTTP P95", "p95", " ms"),
     ("HTTP P99", "p99", " ms"),
     ("Flow Duration P95", "flow_p95", " ms"),
-    ("CPU Rata-rata", "cpu_avg", " %"),
-    ("CPU Maksimum", "cpu_max", " %"),
-    ("Memory Rata-rata", "mem_avg", " MB"),
-    ("Memory Maksimum", "mem_max", " MB"),
+    ("Average CPU Usage", "cpu_avg", " %"),
+    ("Maximum CPU Usage", "cpu_max", " %"),
+    ("Average Memory Usage", "mem_avg", " MB"),
+    ("Maximum Memory Usage", "mem_max", " MB"),
 ]
 
 LABELS = [s[0] for s in SOURCES]
@@ -187,12 +196,12 @@ LABELS = [s[0] for s in SOURCES]
 lines = []
 sep = "=" * 86
 lines.append(sep)
-lines.append("  KOMPARASI 3-ARAH: pure net/http  vs  Echo  vs  Node.js")
+lines.append("  THREE-WAY COMPARISON: Go net/http vs Go Echo vs Node.js")
 lines.append(sep)
 for test in TESTS:
     lines.append(f"\n  [ {test.upper()} TESTING ]")
     lines.append("  " + "-" * 84)
-    lines.append(f"  {'Metrik':<24}" + "".join(f"{l:>20}" for l in LABELS))
+    lines.append(f"  {'Metric':<24}" + "".join(f"{l:>20}" for l in LABELS))
     lines.append("  " + "-" * 84)
     for label, key, unit in METRIC_ROWS:
         cells = []
@@ -206,21 +215,52 @@ lines.append("\n" + sep)
 table = "\n".join(lines)
 print(table)
 (RESULT_DIR / "comparison_three.txt").write_text(table + "\n")
-print(f"\nTabel disimpan: {RESULT_DIR / 'comparison_three.txt'}")
+print(f"\nTable saved to: {RESULT_DIR / 'comparison_three.txt'}")
 
 
-# ─── Chart ───────────────────────────────────────────────────────────────────
+# Create the figures.
 try:
     import matplotlib
 
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
 except ImportError:
-    print("\nmatplotlib tidak terinstall — chart dilewati. (pip install matplotlib)")
+    print("\nmatplotlib is not installed; charts were skipped. (pip install matplotlib)")
     sys.exit(0)
 
 X = list(range(len(TESTS)))
-BAR_W = 0.26
+BAR_W = 0.25
+IEEE_DOUBLE_COLUMN_WIDTH = 7.16
+IEEE_FIGURE_HEIGHT = 2.85
+PNG_DPI = 600
+HATCHES = ["////", "\\\\\\\\", "...."]
+
+plt.rcParams.update(
+    {
+        "font.family": "serif",
+        "font.serif": [
+            "Liberation Serif",
+            "Times New Roman",
+            "Times",
+            "DejaVu Serif",
+        ],
+        "font.size": 8,
+        "axes.titlesize": 8,
+        "axes.labelsize": 8,
+        "xtick.labelsize": 7,
+        "ytick.labelsize": 7,
+        "legend.fontsize": 7,
+        "axes.linewidth": 0.6,
+        "lines.linewidth": 0.8,
+        "patch.linewidth": 0.6,
+        "figure.facecolor": "white",
+        "axes.facecolor": "white",
+        "savefig.facecolor": "white",
+        "pdf.fonttype": 42,
+        "ps.fonttype": 42,
+        "mathtext.fontset": "stix",
+    }
+)
 
 
 def get_val(test, label, key):
@@ -233,130 +273,151 @@ def get_val(test, label, key):
         return 0.0
 
 
-def draw_pair(filename, left, right):
-    """1 gambar = 2 subplot, tiap grup test punya 3 bar (pure/echo/node)."""
-    fig, axes = plt.subplots(1, 2, figsize=(14, 5.5))
+def format_value(value, style):
+    """Format compact bar labels without repeating the axis unit."""
+    if style == "decimal":
+        return f"{value:.1f}"
+    if style == "integer":
+        return f"{value:,.0f}"
+    if abs(value) >= 1000:
+        return f"{value / 1000:.1f}k"
+    return f"{value:.0f}"
 
-    for ax, spec in zip(axes, [left, right]):
+
+def draw_pair(basename, left, right):
+    """Create an IEEE two-column figure containing two comparison panels."""
+    fig, axes = plt.subplots(
+        1,
+        2,
+        figsize=(IEEE_DOUBLE_COLUMN_WIDTH, IEEE_FIGURE_HEIGHT),
+        sharex=True,
+    )
+
+    for panel_index, (ax, spec) in enumerate(zip(axes, [left, right])):
         max_val = 0.0
         for i, (label, color, _, _) in enumerate(SOURCES):
             vals = [get_val(test, label, spec["metric_key"]) for test in TESTS]
             max_val = max(max_val, *vals)
-            offset = (i - 1) * BAR_W  # 3 bar: -BAR_W, 0, +BAR_W
+            offset = (i - 1) * BAR_W
             bars = ax.bar(
                 [x + offset for x in X],
                 vals,
                 BAR_W,
                 label=label,
                 color=color,
-                alpha=0.9,
+                edgecolor="black",
+                linewidth=0.45,
+                hatch=HATCHES[i],
+                zorder=3,
             )
             for bar, v in zip(bars, vals):
                 if v > 0:
                     ax.text(
                         bar.get_x() + bar.get_width() / 2,
                         bar.get_height(),
-                        f"{v:.0f}{spec['unit']}",
+                        format_value(v, spec.get("value_format", "auto")),
                         ha="center",
                         va="bottom",
-                        fontsize=8,
+                        fontsize=5.8,
+                        clip_on=False,
                     )
 
         if max_val > 0:
-            ax.set_ylim(0, max_val * 1.20)
-        ax.set_title(spec["title"], fontsize=13, fontweight="bold", pad=8)
-        ax.set_xlabel("Test Type", fontsize=10, labelpad=6)
-        ax.set_ylabel(spec["ylabel"], fontsize=10, labelpad=6)
+            ax.set_ylim(0, max_val * 1.23)
+
+        panel_letter = chr(ord("a") + panel_index)
+        ax.set_title(f"({panel_letter}) {spec['title']}", fontweight="normal", pad=4)
+        ax.set_xlabel("Workload")
+        ax.set_ylabel(spec["ylabel"])
         ax.set_xticks(X)
-        ax.set_xticklabels([t.capitalize() for t in TESTS], fontsize=10)
-        ax.tick_params(axis="y", labelsize=9)
-        ax.grid(axis="y", alpha=0.3, linestyle="--")
-        note = "↑ better" if spec["higher_is_better"] else "↓ better"
-        ax.annotate(
-            note,
-            xy=(0.98, 0.97),
-            xycoords="axes fraction",
-            ha="right",
-            va="top",
-            fontsize=9,
-            color="gray",
-            style="italic",
-        )
+        ax.set_xticklabels([t.capitalize() for t in TESTS])
+        ax.tick_params(axis="both", direction="out", length=2.5, width=0.6)
+        ax.grid(axis="y", color="#BFBFBF", linewidth=0.45, linestyle=":", zorder=0)
+        ax.spines["top"].set_visible(False)
+        ax.spines["right"].set_visible(False)
 
     handles = [
-        plt.Rectangle((0, 0), 1, 1, color=c, alpha=0.9) for _, c, _, _ in SOURCES
+        plt.Rectangle(
+            (0, 0),
+            1,
+            1,
+            facecolor=color,
+            edgecolor="black",
+            linewidth=0.45,
+            hatch=HATCHES[index],
+        )
+        for index, (_, color, _, _) in enumerate(SOURCES)
     ]
     fig.legend(
         handles,
         LABELS,
-        loc="lower center",
+        loc="upper center",
         ncol=3,
-        fontsize=10,
-        bbox_to_anchor=(0.5, -0.02),
+        frameon=False,
+        handlelength=1.8,
+        columnspacing=1.2,
+        bbox_to_anchor=(0.5, 0.995),
     )
 
-    plt.tight_layout(rect=[0, 0.07, 1, 1])
-    outpath = RESULT_DIR / filename
-    plt.savefig(outpath, dpi=150, bbox_inches="tight")
+    fig.subplots_adjust(left=0.09, right=0.99, bottom=0.19, top=0.80, wspace=0.28)
+    output_paths = []
+    for extension, dpi in (("pdf", None), ("png", PNG_DPI)):
+        outpath = RESULT_DIR / f"{basename}.{extension}"
+        fig.savefig(outpath, dpi=dpi, metadata={"Creator": "compare_three.py"})
+        output_paths.append(outpath)
     plt.close()
-    print(f"Chart disimpan: {outpath}")
+    print(f"Figures saved: {output_paths[0]} and {output_paths[1]}")
 
 
-# Gambar 1: Resource (CPU max + Memory avg)
+# Figure 1: maximum CPU and average memory usage.
 draw_pair(
-    "chart3_resource.png",
+    "chart3_resource",
     left={
         "metric_key": "cpu_max",
         "title": "CPU Usage (maximum)",
         "ylabel": "CPU (%)",
-        "unit": "%",
-        "higher_is_better": False,
+        "value_format": "decimal",
     },
     right={
         "metric_key": "mem_avg",
         "title": "Memory Usage (average)",
         "ylabel": "Memory (MB)",
-        "unit": "MB",
-        "higher_is_better": False,
+        "value_format": "integer",
     },
 )
 
-# Gambar 2: Latency (HTTP p95 + Flow p95)
+# Figure 2: HTTP and booking-flow latency.
 draw_pair(
-    "chart3_latency.png",
+    "chart3_latency",
     left={
         "metric_key": "p95",
-        "title": "HTTP Response Time (p95)",
+        "title": "HTTP P95 Latency",
         "ylabel": "Response Time (ms)",
-        "unit": "ms",
-        "higher_is_better": False,
+        "value_format": "integer",
     },
     right={
         "metric_key": "flow_p95",
-        "title": "Booking Flow Duration (p95)",
+        "title": "Booking-Flow P95 Latency",
         "ylabel": "Flow Duration (ms)",
-        "unit": "ms",
-        "higher_is_better": False,
+        "value_format": "integer",
     },
 )
 
-# Gambar 3: Throughput (Total Requests + Req/s)
+# Figure 3: total requests and throughput.
 draw_pair(
-    "chart3_throughput.png",
+    "chart3_throughput",
     left={
         "metric_key": "total_reqs",
         "title": "Total HTTP Requests",
         "ylabel": "Number of Requests",
-        "unit": "",
-        "higher_is_better": True,
+        "value_format": "compact",
     },
     right={
         "metric_key": "req_per_sec",
         "title": "Throughput",
-        "ylabel": "Requests per Second",
-        "unit": "",
-        "higher_is_better": True,
+        "ylabel": "Throughput (requests/s)",
+        "value_format": "decimal",
     },
 )
 
-print(f"\nSelesai! Semua file ada di: {RESULT_DIR}")
+print(f"\nDone. All output files are in: {RESULT_DIR}")
