@@ -300,6 +300,14 @@ def chart_contribution():
                     va="center",
                     fontsize=6.2,
                     color="black",
+                    # Cover the hatch beneath the number so diagonal/dotted
+                    # lines do not merge visually with the label glyphs.
+                    bbox={
+                        "boxstyle": "square,pad=0.12",
+                        "facecolor": ENDPOINT_COLORS[ep],
+                        "edgecolor": "none",
+                    },
+                    zorder=4,
                 )
         bottoms += vals
 
